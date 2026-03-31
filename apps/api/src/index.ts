@@ -1,11 +1,7 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
-import { serve } from '@hono/node-server'
-import { config } from 'dotenv'
-import { resolve } from 'path'
-import type { Server } from 'http'
-import { setupWebSocket } from './ws/index.js'
+import { initDb } from './db.js'
 import { authRoutes } from './routes/auth.js'
 import { customerMenuRoutes } from './routes/customer/menu.js'
 import { customerSessionRoutes } from './routes/customer/sessions.js'
@@ -21,10 +17,17 @@ import { kitchenOrderRoutes } from './routes/kitchen/orders.js'
 import { waiterRoutes } from './routes/waiter/index.js'
 import { AppError } from './middleware/errors.js'
 
-config({ path: resolve(process.cwd(), '../../.env') })
-config({ path: resolve(process.cwd(), '.env') })
+type Bindings = {
+  DATABASE_URL: string
+  BETTER_AUTH_SECRET: string
+}
 
-const app = new Hono()
+const app = new Hono<{ Bindings: Bindings }>()
+
+app.use('*', async (c, next) => {
+  initDb(c.env.DATABASE_URL)
+  await next()
+})
 
 app.use('*', logger())
 app.use(
@@ -85,13 +88,4 @@ app.notFound((c) =>
 
 export type AppType = typeof app
 
-const port = parseInt(process.env.PORT ?? '3000', 10)
-
-const server = serve(
-  { fetch: app.fetch, port, hostname: '0.0.0.0' },
-  (info) => {
-    console.log(`DineFlow API running on http://0.0.0.0:${info.port}`)
-  }
-) as Server
-
-setupWebSocket(server)
+export default app

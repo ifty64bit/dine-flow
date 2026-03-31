@@ -1,13 +1,17 @@
 import { createDb } from '@dineflow/db'
-import { config } from 'dotenv'
-import { resolve } from 'path'
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
+import type { Db } from '@dineflow/db'
 
-config({ path: resolve(process.cwd(), '../../.env') })
-config({ path: resolve(process.cwd(), '.env') })
+let _db: Db | null = null
 
-const url = process.env.DATABASE_URL
-if (!url) throw new Error('DATABASE_URL is required')
+export function initDb(url: string) {
+  if (!_db) _db = createDb(url)
+}
 
-export const db = createDb(url)
+// Proxy so all existing `import { db }` across routes keep working unchanged.
+// Throws clearly if initDb() wasn't called before first use.
+export const db = new Proxy({} as Db, {
+  get(_, prop) {
+    if (!_db) throw new Error('DB not initialized — initDb(url) must be called first')
+    return (_db as any)[prop]
+  },
+})

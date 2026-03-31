@@ -1,0 +1,12 @@
+name = "dineflow-api"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Secrets (set via CLI — never commit real values):
+#   wrangler secret put DATABASE_URL
+#   wrangler secret put BETTER_AUTH_SECRET
+#
+# [vars] is for non-sensitive config only.
+[vars]
+NODE_ENV = "production"

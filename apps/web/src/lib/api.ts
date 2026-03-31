@@ -1,7 +1,7 @@
-const BASE_URL =
-  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:3000'
-    : `http://${window.location.host}`
+// In dev, Vite proxies /api and /auth to localhost:3000 (empty BASE_URL = same-origin).
+// In production, set VITE_API_URL to your Workers URL:
+//   e.g. https://dineflow-api.your-subdomain.workers.dev
+const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? ''
 
 interface RequestOptions extends RequestInit {
   token?: string
@@ -48,8 +48,3 @@ export const api = {
   delete: <T>(path: string, opts?: RequestOptions) =>
     request<T>(path, { ...opts, method: 'DELETE' }),
 }
-
-export const WS_URL =
-  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'ws://localhost:3000/ws'
-    : `ws://${window.location.host}/ws`

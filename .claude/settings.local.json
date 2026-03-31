@@ -12,7 +12,9 @@
       "Bash(timeout 20 bun run --filter @dineflow/web dev)",
       "Bash(timeout 25 bun run dev)",
       "Bash(timeout 20 bun run dev)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(find /h/Programing/dineflow/apps -type d -not -path */node_modules/* -not -path */dist/*)",
+      "Bash(find /h/Programing/dineflow/packages -type d -not -path */node_modules/* -not -path */dist/* -not -path */migrations/*)"
     ]
   }
 }
