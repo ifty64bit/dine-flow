@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(timeout 30 bun run dev)",
+      "Bash(mv _admin/_admin.tsx _admin/-_admin.tsx)",
+      "Bash(mv _customer/_customer.tsx _customer/-_customer.tsx)",
+      "Bash(mv _waiter/_waiter.tsx _waiter/-_waiter.tsx)",
+      "Bash(mv _kitchen/_kitchen.tsx _kitchen/-_kitchen.tsx)",
+      "Bash(mv _kitchen/index.tsx _kitchen/-index.tsx)",
+      "Bash(bun install:*)",
+      "Bash(bun add:*)",
+      "Bash(timeout 20 bun run --filter @dineflow/web dev)",
+      "Bash(timeout 25 bun run dev)",
+      "Bash(timeout 20 bun run dev)",
+      "Bash(xargs grep:*)"
+    ]
+  }
+}
