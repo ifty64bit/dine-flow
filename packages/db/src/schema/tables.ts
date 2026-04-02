@@ -1,12 +1,12 @@
-import { pgTable, uuid, integer, numeric, varchar, timestamp, unique, index } from 'drizzle-orm/pg-core'
+import { pgTable, bigserial, bigint, integer, numeric, varchar, timestamp, unique, index } from 'drizzle-orm/pg-core'
 import { tableStatusEnum, tableShapeEnum } from './enums.js'
 import { floors } from './floors.js'
 import { tableClasses } from './table-classes.js'
 
 export const tables = pgTable('tables', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  floorId: uuid('floor_id').notNull().references(() => floors.id, { onDelete: 'cascade' }),
-  tableClassId: uuid('table_class_id').notNull().references(() => tableClasses.id, { onDelete: 'restrict' }),
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  floorId: bigint('floor_id', { mode: 'number' }).notNull().references(() => floors.id, { onDelete: 'cascade' }),
+  tableClassId: bigint('table_class_id', { mode: 'number' }).notNull().references(() => tableClasses.id, { onDelete: 'restrict' }),
   number: integer('number').notNull(),
   capacity: integer('capacity').notNull().default(4),
   shape: tableShapeEnum('shape').notNull().default('square'),

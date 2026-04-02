@@ -1,5 +1,5 @@
 import {
-  pgTable, uuid, varchar, integer, numeric, boolean,
+  pgTable, bigserial, bigint, varchar, integer, numeric, boolean,
   jsonb, timestamp, text, index
 } from 'drizzle-orm/pg-core'
 import { orderStatusEnum, orderItemStatusEnum, orderCreatedByEnum, kitchenStationEnum } from './enums.js'
@@ -9,9 +9,9 @@ import { menuItems } from './menu.js'
 import { users } from './users.js'
 
 export const sessions = pgTable('sessions', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  tableId: uuid('table_id').notNull().references(() => tables.id, { onDelete: 'restrict' }),
-  tableClassId: uuid('table_class_id').notNull().references(() => tableClasses.id, { onDelete: 'restrict' }),
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  tableId: bigint('table_id', { mode: 'number' }).notNull().references(() => tables.id, { onDelete: 'restrict' }),
+  tableClassId: bigint('table_class_id', { mode: 'number' }).notNull().references(() => tableClasses.id, { onDelete: 'restrict' }),
   guestName: varchar('guest_name', { length: 255 }),
   startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
   endedAt: timestamp('ended_at', { withTimezone: true }),
@@ -27,8 +27,8 @@ export const orderCounters = pgTable('order_counters', {
 })
 
 export const orders = pgTable('orders', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  sessionId: uuid('session_id').notNull().references(() => sessions.id, { onDelete: 'restrict' }),
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  sessionId: bigint('session_id', { mode: 'number' }).notNull().references(() => sessions.id, { onDelete: 'restrict' }),
   orderNumber: varchar('order_number', { length: 20 }).notNull(),
   status: orderStatusEnum('status').notNull().default('placed'),
   subtotal: numeric('subtotal', { precision: 10, scale: 2 }).notNull(),
@@ -38,7 +38,7 @@ export const orders = pgTable('orders', {
   total: numeric('total', { precision: 10, scale: 2 }).notNull(),
   notes: text('notes'),
   createdBy: orderCreatedByEnum('created_by').notNull().default('customer'),
-  waiterId: uuid('waiter_id').references(() => users.id, { onDelete: 'set null' }),
+  waiterId: bigint('waiter_id', { mode: 'number' }).references(() => users.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
@@ -48,9 +48,9 @@ export const orders = pgTable('orders', {
 ])
 
 export const orderItems = pgTable('order_items', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  orderId: uuid('order_id').notNull().references(() => orders.id, { onDelete: 'cascade' }),
-  menuItemId: uuid('menu_item_id').notNull().references(() => menuItems.id, { onDelete: 'restrict' }),
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  orderId: bigint('order_id', { mode: 'number' }).notNull().references(() => orders.id, { onDelete: 'cascade' }),
+  menuItemId: bigint('menu_item_id', { mode: 'number' }).notNull().references(() => menuItems.id, { onDelete: 'restrict' }),
   quantity: integer('quantity').notNull().default(1),
   unitPrice: numeric('unit_price', { precision: 10, scale: 2 }).notNull(),
   modifiers: jsonb('modifiers').notNull().default([]),

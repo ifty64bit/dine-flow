@@ -1,7 +1,7 @@
-import { pgTable, uuid, varchar, boolean, jsonb, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, bigserial, varchar, boolean, jsonb, timestamp } from 'drizzle-orm/pg-core'
 
 export const branches = pgTable('branches', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
   address: varchar('address', { length: 500 }),
   phone: varchar('phone', { length: 50 }),

@@ -1,14 +1,14 @@
-import { pgTable, uuid, varchar, integer, date, time, timestamp, index } from 'drizzle-orm/pg-core'
+import { pgTable, bigserial, bigint, varchar, integer, date, time, timestamp, index } from 'drizzle-orm/pg-core'
 import { reservationStatusEnum } from './enums.js'
 import { branches } from './branches.js'
 import { tables } from './tables.js'
 import { tableClasses } from './table-classes.js'
 
 export const reservations = pgTable('reservations', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  branchId: uuid('branch_id').notNull().references(() => branches.id, { onDelete: 'cascade' }),
-  tableId: uuid('table_id').references(() => tables.id, { onDelete: 'set null' }),
-  preferredClassId: uuid('preferred_class_id').references(() => tableClasses.id, { onDelete: 'set null' }),
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  branchId: bigint('branch_id', { mode: 'number' }).notNull().references(() => branches.id, { onDelete: 'cascade' }),
+  tableId: bigint('table_id', { mode: 'number' }).references(() => tables.id, { onDelete: 'set null' }),
+  preferredClassId: bigint('preferred_class_id', { mode: 'number' }).references(() => tableClasses.id, { onDelete: 'set null' }),
   customerName: varchar('customer_name', { length: 255 }).notNull(),
   customerPhone: varchar('customer_phone', { length: 50 }).notNull(),
   partySize: integer('party_size').notNull(),

@@ -1,6 +1,6 @@
 // FUTURE: not used in MVP — placeholder tables for payment, feedback, waiter calls, and audit logging features
 
-import { pgTable, uuid, numeric, varchar, integer, timestamp, text, jsonb, check, index } from 'drizzle-orm/pg-core'
+import { pgTable, bigserial, bigint, numeric, varchar, integer, timestamp, text, jsonb, check, index } from 'drizzle-orm/pg-core'
 import { paymentMethodEnum, paymentStatusEnum, waiterCallReasonEnum, waiterCallStatusEnum } from './enums.js'
 import { sessions } from './orders.js'
 import { users } from './users.js'
@@ -8,8 +8,8 @@ import { sql } from 'drizzle-orm'
 
 // FUTURE: not used in MVP
 export const payments = pgTable('payments', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  sessionId: uuid('session_id').notNull().references(() => sessions.id, { onDelete: 'restrict' }),
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  sessionId: bigint('session_id', { mode: 'number' }).notNull().references(() => sessions.id, { onDelete: 'restrict' }),
   method: paymentMethodEnum('method').notNull(),
   gatewayRef: varchar('gateway_ref', { length: 255 }),
   amount: numeric('amount', { precision: 10, scale: 2 }).notNull(),
@@ -23,8 +23,8 @@ export const payments = pgTable('payments', {
 
 // FUTURE: not used in MVP
 export const feedback = pgTable('feedback', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  sessionId: uuid('session_id').notNull().references(() => sessions.id, { onDelete: 'cascade' }),
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  sessionId: bigint('session_id', { mode: 'number' }).notNull().references(() => sessions.id, { onDelete: 'cascade' }),
   rating: integer('rating').notNull(),
   comment: text('comment'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -35,8 +35,8 @@ export const feedback = pgTable('feedback', {
 
 // FUTURE: not used in MVP
 export const waiterCalls = pgTable('waiter_calls', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  sessionId: uuid('session_id').notNull().references(() => sessions.id, { onDelete: 'cascade' }),
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  sessionId: bigint('session_id', { mode: 'number' }).notNull().references(() => sessions.id, { onDelete: 'cascade' }),
   reason: waiterCallReasonEnum('reason').notNull(),
   status: waiterCallStatusEnum('status').notNull().default('pending'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -47,11 +47,11 @@ export const waiterCalls = pgTable('waiter_calls', {
 
 // FUTURE: not used in MVP
 export const auditLogs = pgTable('audit_logs', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  userId: bigint('user_id', { mode: 'number' }).references(() => users.id, { onDelete: 'set null' }),
   action: varchar('action', { length: 100 }).notNull(),
   entityType: varchar('entity_type', { length: 100 }),
-  entityId: uuid('entity_id'),
+  entityId: bigint('entity_id', { mode: 'number' }),
   oldValue: jsonb('old_value'),
   newValue: jsonb('new_value'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

@@ -1,5 +1,5 @@
 import {
-  pgTable, uuid, varchar, text, numeric, integer, boolean,
+  pgTable, bigserial, bigint, varchar, text, numeric, integer, boolean,
   jsonb, timestamp, primaryKey, index, unique
 } from 'drizzle-orm/pg-core'
 import { visibilityModeEnum, classRuleTypeEnum, kitchenStationEnum } from './enums.js'
@@ -7,8 +7,8 @@ import { branches } from './branches.js'
 import { tableClasses } from './table-classes.js'
 
 export const menuCategories = pgTable('menu_categories', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  branchId: uuid('branch_id').references(() => branches.id, { onDelete: 'cascade' }),
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  branchId: bigint('branch_id', { mode: 'number' }).references(() => branches.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 100 }).notNull(),
   description: text('description'),
   imageUrl: varchar('image_url', { length: 500 }),
@@ -21,9 +21,9 @@ export const menuCategories = pgTable('menu_categories', {
 ])
 
 export const menuItems = pgTable('menu_items', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  categoryId: uuid('category_id').notNull().references(() => menuCategories.id, { onDelete: 'cascade' }),
-  branchId: uuid('branch_id').references(() => branches.id, { onDelete: 'cascade' }),
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  categoryId: bigint('category_id', { mode: 'number' }).notNull().references(() => menuCategories.id, { onDelete: 'cascade' }),
+  branchId: bigint('branch_id', { mode: 'number' }).references(() => branches.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 255 }).notNull(),
   description: text('description'),
   basePrice: numeric('base_price', { precision: 10, scale: 2 }).notNull(),
@@ -43,9 +43,9 @@ export const menuItems = pgTable('menu_items', {
 ])
 
 export const menuItemClassRules = pgTable('menu_item_class_rules', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  menuItemId: uuid('menu_item_id').notNull().references(() => menuItems.id, { onDelete: 'cascade' }),
-  tableClassId: uuid('table_class_id').notNull().references(() => tableClasses.id, { onDelete: 'cascade' }),
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  menuItemId: bigint('menu_item_id', { mode: 'number' }).notNull().references(() => menuItems.id, { onDelete: 'cascade' }),
+  tableClassId: bigint('table_class_id', { mode: 'number' }).notNull().references(() => tableClasses.id, { onDelete: 'cascade' }),
   ruleType: classRuleTypeEnum('rule_type').notNull(),
   priceOverride: numeric('price_override', { precision: 10, scale: 2 }),
 }, (table) => [
@@ -55,7 +55,7 @@ export const menuItemClassRules = pgTable('menu_item_class_rules', {
 ])
 
 export const modifierGroups = pgTable('modifier_groups', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
   name: varchar('name', { length: 100 }).notNull(),
   isRequired: boolean('is_required').notNull().default(false),
   minSelect: integer('min_select').notNull().default(0),
@@ -64,8 +64,8 @@ export const modifierGroups = pgTable('modifier_groups', {
 })
 
 export const menuItemModifierGroups = pgTable('menu_item_modifier_groups', {
-  menuItemId: uuid('menu_item_id').notNull().references(() => menuItems.id, { onDelete: 'cascade' }),
-  modifierGroupId: uuid('modifier_group_id').notNull().references(() => modifierGroups.id, { onDelete: 'cascade' }),
+  menuItemId: bigint('menu_item_id', { mode: 'number' }).notNull().references(() => menuItems.id, { onDelete: 'cascade' }),
+  modifierGroupId: bigint('modifier_group_id', { mode: 'number' }).notNull().references(() => modifierGroups.id, { onDelete: 'cascade' }),
 }, (table) => [
   primaryKey({ columns: [table.menuItemId, table.modifierGroupId] }),
   index('menu_item_modifier_groups_item_idx').on(table.menuItemId),
@@ -73,8 +73,8 @@ export const menuItemModifierGroups = pgTable('menu_item_modifier_groups', {
 ])
 
 export const modifiers = pgTable('modifiers', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  groupId: uuid('group_id').notNull().references(() => modifierGroups.id, { onDelete: 'cascade' }),
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  groupId: bigint('group_id', { mode: 'number' }).notNull().references(() => modifierGroups.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 100 }).notNull(),
   priceAdjustment: numeric('price_adjustment', { precision: 10, scale: 2 }).notNull().default('0'),
   sortOrder: integer('sort_order').notNull().default(0),

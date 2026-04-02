@@ -1,7 +1,7 @@
-import { pgTable, uuid, varchar, numeric, integer, boolean, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, bigserial, varchar, numeric, integer, boolean, timestamp } from 'drizzle-orm/pg-core'
 
 export const tableClasses = pgTable('table_classes', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
   name: varchar('name', { length: 100 }).notNull(),
   slug: varchar('slug', { length: 100 }).notNull().unique(),
   description: varchar('description', { length: 500 }),

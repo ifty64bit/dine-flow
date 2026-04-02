@@ -1,7 +1,7 @@
-import { pgTable, uuid, varchar, numeric, boolean, jsonb, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, bigserial, varchar, numeric, boolean, jsonb, timestamp } from 'drizzle-orm/pg-core'
 
 export const settings = pgTable('settings', {
-  id: uuid('id').primaryKey().defaultRandom(),
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
   restaurantName: varchar('restaurant_name', { length: 255 }).notNull().default('My Restaurant'),
   logoUrl: varchar('logo_url', { length: 500 }),
   currency: varchar('currency', { length: 10 }).notNull().default('BDT'),
