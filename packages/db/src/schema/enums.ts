@@ -1,5 +1,9 @@
 import { pgEnum } from 'drizzle-orm/pg-core'
 
+// SaaS enums
+export const subscriptionStatusEnum = pgEnum('subscription_status', ['trialing', 'active', 'past_due', 'cancelled', 'paused'])
+export const orgMemberRoleEnum = pgEnum('org_member_role', ['owner', 'admin', 'manager', 'staff'])
+
 export const userRoleEnum = pgEnum('user_role', ['admin', 'manager', 'staff'])
 export const staffTypeEnum = pgEnum('staff_type', ['waiter', 'kitchen', 'cashier'])
 export const tableStatusEnum = pgEnum('table_status', ['vacant', 'occupied', 'reserved', 'cleaning', 'merged'])

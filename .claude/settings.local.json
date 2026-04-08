@@ -14,7 +14,8 @@
       "Bash(timeout 20 bun run dev)",
       "Bash(xargs grep:*)",
       "Bash(find /h/Programing/dineflow/apps -type d -not -path */node_modules/* -not -path */dist/*)",
-      "Bash(find /h/Programing/dineflow/packages -type d -not -path */node_modules/* -not -path */dist/* -not -path */migrations/*)"
+      "Bash(find /h/Programing/dineflow/packages -type d -not -path */node_modules/* -not -path */dist/* -not -path */migrations/*)",
+      "Bash(bun run:*)"
     ]
   }
 }

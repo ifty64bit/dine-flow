@@ -1,46 +1,82 @@
 import { relations } from 'drizzle-orm'
+import { organizations, subscriptionPlans, subscriptions } from './organizations.js'
+import { organizationMembers } from './organization-members.js'
 import { branches } from './branches.js'
 import { users } from './users.js'
-import { floors } from './floors.js'
 import { tables } from './tables.js'
 import { tableClasses } from './table-classes.js'
 import { menuCategories, menuItems, menuItemClassRules, modifierGroups, menuItemModifierGroups, modifiers } from './menu.js'
-import { sessions, orders, orderItems } from './orders.js'
+import { sessions, orders, orderItems, orderCounters } from './orders.js'
 import { reservations } from './reservations.js'
 import { payments, feedback, waiterCalls, auditLogs } from './payments.js'
 
-export const branchesRelations = relations(branches, ({ many }) => ({
-  floors: many(floors),
-  menuCategories: many(menuCategories),
-  menuItems: many(menuItems),
-  reservations: many(reservations),
-  users: many(users),
+// ─── Organizations ───────────────────────────────────────────────────────────
+
+export const organizationsRelations = relations(organizations, ({ many, one }) => ({
+  branches: many(branches),
+  tableClasses: many(tableClasses),
+  members: many(organizationMembers),
+  subscriptions: many(subscriptions),
+  auditLogs: many(auditLogs),
 }))
 
-export const usersRelations = relations(users, ({ one, many }) => ({
-  branch: one(branches, { fields: [users.branchId], references: [branches.id] }),
+export const subscriptionPlansRelations = relations(subscriptionPlans, ({ many }) => ({
+  subscriptions: many(subscriptions),
+}))
+
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+  organization: one(organizations, { fields: [subscriptions.organizationId], references: [organizations.id] }),
+  plan: one(subscriptionPlans, { fields: [subscriptions.planId], references: [subscriptionPlans.id] }),
+}))
+
+export const organizationMembersRelations = relations(organizationMembers, ({ one }) => ({
+  organization: one(organizations, { fields: [organizationMembers.organizationId], references: [organizations.id] }),
+  user: one(users, { fields: [organizationMembers.userId], references: [users.id] }),
+  branch: one(branches, { fields: [organizationMembers.branchId], references: [branches.id] }),
+}))
+
+// ─── Users ───────────────────────────────────────────────────────────────────
+
+export const usersRelations = relations(users, ({ many }) => ({
+  memberships: many(organizationMembers),
   orders: many(orders),
   auditLogs: many(auditLogs),
 }))
 
-export const floorsRelations = relations(floors, ({ one, many }) => ({
-  branch: one(branches, { fields: [floors.branchId], references: [branches.id] }),
+// ─── Branches ────────────────────────────────────────────────────────────────
+
+export const branchesRelations = relations(branches, ({ one, many }) => ({
+  organization: one(organizations, { fields: [branches.organizationId], references: [organizations.id] }),
   tables: many(tables),
+  menuCategories: many(menuCategories),
+  menuItems: many(menuItems),
+  modifierGroups: many(modifierGroups),
+  reservations: many(reservations),
+  sessions: many(sessions),
+  orders: many(orders),
+  orderCounter: many(orderCounters),
 }))
 
-export const tableClassesRelations = relations(tableClasses, ({ many }) => ({
+// ─── Table Classes ────────────────────────────────────────────────────────────
+
+export const tableClassesRelations = relations(tableClasses, ({ one, many }) => ({
+  organization: one(organizations, { fields: [tableClasses.organizationId], references: [organizations.id] }),
   tables: many(tables),
   menuItemClassRules: many(menuItemClassRules),
   sessions: many(sessions),
   reservations: many(reservations),
 }))
 
+// ─── Tables ──────────────────────────────────────────────────────────────────
+
 export const tablesRelations = relations(tables, ({ one, many }) => ({
-  floor: one(floors, { fields: [tables.floorId], references: [floors.id] }),
+  branch: one(branches, { fields: [tables.branchId], references: [branches.id] }),
   tableClass: one(tableClasses, { fields: [tables.tableClassId], references: [tableClasses.id] }),
   sessions: many(sessions),
   reservations: many(reservations),
 }))
+
+// ─── Menu ─────────────────────────────────────────────────────────────────────
 
 export const menuCategoriesRelations = relations(menuCategories, ({ one, many }) => ({
   branch: one(branches, { fields: [menuCategories.branchId], references: [branches.id] }),
@@ -60,7 +96,8 @@ export const menuItemClassRulesRelations = relations(menuItemClassRules, ({ one 
   tableClass: one(tableClasses, { fields: [menuItemClassRules.tableClassId], references: [tableClasses.id] }),
 }))
 
-export const modifierGroupsRelations = relations(modifierGroups, ({ many }) => ({
+export const modifierGroupsRelations = relations(modifierGroups, ({ one, many }) => ({
+  branch: one(branches, { fields: [modifierGroups.branchId], references: [branches.id] }),
   modifiers: many(modifiers),
   menuItems: many(menuItemModifierGroups),
 }))
@@ -74,7 +111,14 @@ export const modifiersRelations = relations(modifiers, ({ one }) => ({
   group: one(modifierGroups, { fields: [modifiers.groupId], references: [modifierGroups.id] }),
 }))
 
+// ─── Orders ───────────────────────────────────────────────────────────────────
+
+export const orderCountersRelations = relations(orderCounters, ({ one }) => ({
+  branch: one(branches, { fields: [orderCounters.branchId], references: [branches.id] }),
+}))
+
 export const sessionsRelations = relations(sessions, ({ one, many }) => ({
+  branch: one(branches, { fields: [sessions.branchId], references: [branches.id] }),
   table: one(tables, { fields: [sessions.tableId], references: [tables.id] }),
   tableClass: one(tableClasses, { fields: [sessions.tableClassId], references: [tableClasses.id] }),
   orders: many(orders),
@@ -84,6 +128,7 @@ export const sessionsRelations = relations(sessions, ({ one, many }) => ({
 }))
 
 export const ordersRelations = relations(orders, ({ one, many }) => ({
+  branch: one(branches, { fields: [orders.branchId], references: [branches.id] }),
   session: one(sessions, { fields: [orders.sessionId], references: [sessions.id] }),
   waiter: one(users, { fields: [orders.waiterId], references: [users.id] }),
   items: many(orderItems),
@@ -94,13 +139,16 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
   menuItem: one(menuItems, { fields: [orderItems.menuItemId], references: [menuItems.id] }),
 }))
 
+// ─── Reservations ─────────────────────────────────────────────────────────────
+
 export const reservationsRelations = relations(reservations, ({ one }) => ({
   branch: one(branches, { fields: [reservations.branchId], references: [branches.id] }),
   table: one(tables, { fields: [reservations.tableId], references: [tables.id] }),
   preferredClass: one(tableClasses, { fields: [reservations.preferredClassId], references: [tableClasses.id] }),
 }))
 
-// FUTURE relations
+// ─── Payments / Future ────────────────────────────────────────────────────────
+
 export const paymentsRelations = relations(payments, ({ one }) => ({
   session: one(sessions, { fields: [payments.sessionId], references: [sessions.id] }),
 }))
@@ -114,5 +162,7 @@ export const waiterCallsRelations = relations(waiterCalls, ({ one }) => ({
 }))
 
 export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
+  organization: one(organizations, { fields: [auditLogs.organizationId], references: [organizations.id] }),
+  branch: one(branches, { fields: [auditLogs.branchId], references: [branches.id] }),
   user: one(users, { fields: [auditLogs.userId], references: [users.id] }),
 }))

@@ -1,17 +1,19 @@
 import { createDb } from '@dineflow/db'
 import type { Db } from '@dineflow/db'
 
+type DbFactory = (url: string) => Db
+
 let _db: Db | null = null
 
-export function initDb(url: string) {
-  if (!_db) _db = createDb(url)
+/** Call once before handling requests. Pass a custom factory for non-CF runtimes (e.g. createDbNode for local dev). */
+export function initDb(url: string, factory: DbFactory = createDb) {
+  if (!_db) _db = factory(url)
 }
 
 // Proxy so all existing `import { db }` across routes keep working unchanged.
-// Throws clearly if initDb() wasn't called before first use.
 export const db = new Proxy({} as Db, {
   get(_, prop) {
-    if (!_db) throw new Error('DB not initialized — initDb(url) must be called first')
+    if (!_db) throw new Error('DB not initialized — call initDb(url) first')
     return (_db as any)[prop]
   },
 })

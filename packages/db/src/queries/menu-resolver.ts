@@ -12,7 +12,7 @@ import {
 } from '../schema/index.js'
 
 export interface ResolvedModifier {
-  id: string
+  id: number
   name: string
   priceAdjustment: number
   sortOrder: number
@@ -20,7 +20,7 @@ export interface ResolvedModifier {
 }
 
 export interface ResolvedModifierGroup {
-  id: string
+  id: number
   name: string
   isRequired: boolean
   minSelect: number
@@ -29,7 +29,7 @@ export interface ResolvedModifierGroup {
 }
 
 export interface ResolvedMenuItem {
-  id: string
+  id: number
   name: string
   description: string | null
   basePrice: number
@@ -45,7 +45,7 @@ export interface ResolvedMenuItem {
 }
 
 export interface ResolvedCategory {
-  id: string
+  id: number
   name: string
   description: string | null
   imageUrl: string | null
@@ -55,8 +55,8 @@ export interface ResolvedCategory {
 
 export async function getMenuForTable(
   db: Db,
-  branchId: string,
-  tableId: string
+  branchId: number,
+  tableId: number
 ): Promise<ResolvedCategory[]> {
   // Resolve table_class_id from table
   const table = await db.query.tables.findFirst({
@@ -109,7 +109,7 @@ export async function getMenuForTable(
   })
 
   // Filter and resolve pricing per item
-  const resolvedItems: (ResolvedMenuItem & { categoryId: string })[] = []
+  const resolvedItems: (ResolvedMenuItem & { categoryId: number })[] = []
 
   for (const item of items) {
     const classRule = item.classRules[0] ?? null

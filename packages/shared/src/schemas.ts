@@ -1,14 +1,23 @@
 import { z } from 'zod'
 
+// Operating hours — keyed by day ("mon","tue","wed","thu","fri","sat","sun")
+export const operatingHoursDaySchema = z.object({
+  open: z.string().regex(/^\d{2}:\d{2}$/, 'Format HH:MM'),
+  close: z.string().regex(/^\d{2}:\d{2}$/, 'Format HH:MM'),
+  closed: z.boolean().optional().default(false),
+})
+export const operatingHoursSchema = z.record(
+  z.enum(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']),
+  operatingHoursDaySchema
+)
+export type OperatingHours = z.infer<typeof operatingHoursSchema>
+
 // Branch
 export const createBranchSchema = z.object({
   name: z.string().min(1).max(255),
   address: z.string().max(500).optional(),
   phone: z.string().max(50).optional(),
-  operatingHours: z.record(z.object({
-    open: z.string(),
-    close: z.string(),
-  })).optional().default({}),
+  operatingHours: operatingHoursSchema.optional().default({}),
   isActive: z.boolean().optional().default(true),
 })
 export const updateBranchSchema = createBranchSchema.partial()
@@ -39,13 +48,6 @@ export const createTableClassSchema = z.object({
   isActive: z.boolean().default(true),
 })
 export const updateTableClassSchema = createTableClassSchema.partial()
-
-// Floor
-export const createFloorSchema = z.object({
-  branchId: z.string().uuid(),
-  name: z.string().min(1).max(100),
-  sortOrder: z.number().int().default(0),
-})
 
 // Table
 export const createTableSchema = z.object({
@@ -123,20 +125,38 @@ export const startSessionSchema = z.object({
   guestName: z.string().max(255).optional(),
 })
 
-// Order
+// ─── Order modifiers ─────────────────────────────────────────────────────────
+
+// Input: what the client sends when placing an order (IDs only — server resolves names/prices)
+export const orderModifierInputSchema = z.object({
+  modifierId: z.number().int().positive(),
+  modifierGroupId: z.number().int().positive(),
+})
+export type OrderModifierInput = z.infer<typeof orderModifierInputSchema>
+
+// Snapshot: what gets written into order_items.modifiers JSONB at order time.
+// Captures the full state at purchase — immune to future price/name changes.
+export const orderModifierSnapshotSchema = z.object({
+  modifierId: z.number().int().positive(),
+  modifierName: z.string(),
+  modifierGroupId: z.number().int().positive(),
+  modifierGroupName: z.string(),
+  priceAdjustment: z.number(),
+})
+export type OrderModifierSnapshot = z.infer<typeof orderModifierSnapshotSchema>
+export const orderModifiersSnapshotSchema = z.array(orderModifierSnapshotSchema)
+
+// ─── Order ───────────────────────────────────────────────────────────────────
+
 export const orderItemInputSchema = z.object({
-  menuItemId: z.string().uuid(),
+  menuItemId: z.number().int().positive(),
   quantity: z.number().int().positive().max(99),
-  modifiers: z.array(z.object({
-    modifierId: z.string().uuid(),
-    name: z.string(),
-    priceAdjustment: z.number(),
-  })).default([]),
+  modifiers: z.array(orderModifierInputSchema).default([]),
   specialInstructions: z.string().max(500).optional(),
 })
 
 export const createOrderSchema = z.object({
-  sessionId: z.string().uuid(),
+  sessionId: z.number().int().positive(),
   items: z.array(orderItemInputSchema).min(1),
   notes: z.string().max(1000).optional(),
 })

@@ -56,12 +56,15 @@ export const menuItemClassRules = pgTable('menu_item_class_rules', {
 
 export const modifierGroups = pgTable('modifier_groups', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
+  branchId: bigint('branch_id', { mode: 'number' }).notNull().references(() => branches.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 100 }).notNull(),
   isRequired: boolean('is_required').notNull().default(false),
   minSelect: integer('min_select').notNull().default(0),
   maxSelect: integer('max_select').notNull().default(1),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-})
+}, (table) => [
+  index('modifier_groups_branch_id_idx').on(table.branchId),
+])
 
 export const menuItemModifierGroups = pgTable('menu_item_modifier_groups', {
   menuItemId: bigint('menu_item_id', { mode: 'number' }).notNull().references(() => menuItems.id, { onDelete: 'cascade' }),

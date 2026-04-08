@@ -3,21 +3,26 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "wrangler dev",
+    "dev": "tsx watch src/index.node.ts",
+    "dev:cf": "wrangler dev",
     "deploy": "wrangler deploy",
     "build": "tsc --noEmit"
   },
   "dependencies": {
     "@dineflow/db": "workspace:*",
     "@dineflow/shared": "workspace:*",
+    "@hono/node-server": "^1.13.7",
     "@hono/zod-validator": "^0.4.3",
     "hono": "^4.7.2",
     "zod": "^3.24.1",
-    "bcryptjs": "^2.4.3"
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.7"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241218.0",
     "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
     "wrangler": "^3.101.0",
     "typescript": "^5.7.2"
   }

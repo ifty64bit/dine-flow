@@ -2,6 +2,8 @@
 
 import { pgTable, bigserial, bigint, numeric, varchar, integer, timestamp, text, jsonb, check, index } from 'drizzle-orm/pg-core'
 import { paymentMethodEnum, paymentStatusEnum, waiterCallReasonEnum, waiterCallStatusEnum } from './enums.js'
+import { organizations } from './organizations.js'
+import { branches } from './branches.js'
 import { sessions } from './orders.js'
 import { users } from './users.js'
 import { sql } from 'drizzle-orm'
@@ -48,6 +50,8 @@ export const waiterCalls = pgTable('waiter_calls', {
 // FUTURE: not used in MVP
 export const auditLogs = pgTable('audit_logs', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
+  organizationId: bigint('organization_id', { mode: 'number' }).references(() => organizations.id, { onDelete: 'cascade' }),
+  branchId: bigint('branch_id', { mode: 'number' }).references(() => branches.id, { onDelete: 'set null' }),
   userId: bigint('user_id', { mode: 'number' }).references(() => users.id, { onDelete: 'set null' }),
   action: varchar('action', { length: 100 }).notNull(),
   entityType: varchar('entity_type', { length: 100 }),
@@ -56,6 +60,8 @@ export const auditLogs = pgTable('audit_logs', {
   newValue: jsonb('new_value'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
+  index('audit_logs_org_id_idx').on(table.organizationId),
+  index('audit_logs_branch_id_idx').on(table.branchId),
   index('audit_logs_entity_idx').on(table.entityType, table.entityId),
   index('audit_logs_user_id_idx').on(table.userId),
   index('audit_logs_created_at_idx').on(table.createdAt),
