@@ -4,7 +4,18 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**"],
+      "inputs": ["$TURBO_DEFAULT$", "tsconfig.json"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "outputs": [],
+      "inputs": ["$TURBO_DEFAULT$", "tsconfig.json", "tsconfig.*.json"]
+    },
+    "gen-types": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**/*.d.ts", "dist/**/*.d.ts.map"],
+      "inputs": ["$TURBO_DEFAULT$", "tsconfig.declarations.json"]
     },
     "dev": {
       "persistent": true,
@@ -25,6 +36,10 @@
       "persistent": true
     },
     "db:seed": {
+      "cache": false,
+      "dependsOn": ["^build"]
+    },
+    "db:seed:superadmin": {
       "cache": false,
       "dependsOn": ["^build"]
     }

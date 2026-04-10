@@ -15,6 +15,7 @@ import { adminBranchRoutes } from './routes/admin/branches.js'
 import { adminQrRoutes } from './routes/admin/qr.js'
 import { kitchenOrderRoutes } from './routes/kitchen/orders.js'
 import { waiterRoutes } from './routes/waiter/index.js'
+import { overlordRoutes } from './routes/overlord/index.js'
 import { AppError } from './middleware/errors.js'
 
 type Bindings = {
@@ -66,6 +67,9 @@ app.route('/api/v1/kitchen', kitchenOrderRoutes)
 
 // Waiter
 app.route('/api/v1/waiter', waiterRoutes)
+
+// Overlord (platform admin)
+app.route('/api/overlord', overlordRoutes)
 
 // Error handling
 app.onError((err, c) => {

@@ -1,28 +1,26 @@
 # DineFlow
 
-Self-hosted restaurant management system. Customers scan a QR code, browse a class-filtered menu, place orders, and kitchen staff see them in real-time.
+Self-hosted restaurant management system API. Provides REST and WebSocket endpoints for restaurant management.
 
 ## MVP Scope
 
-**Included:**
-- QR-based customer ordering (table scan → menu → cart → order)
-- Table class system with per-class pricing and visibility rules
-- Kitchen Display System (KDS) with real-time Kanban board
-- Waiter dashboard with live table status and manual order entry
-- Admin portal (menu CRUD, table/floor management, staff, reservations, settings)
-- Role-based auth (admin / manager / staff)
-- Real-time WebSocket events across all views
+**Included (API only):**
 
-**Deferred (schema ready, no app code):**
-Payments, billing, split bill, tips, discounts, feedback ratings, analytics, receipt printing, inventory, loyalty program, audit logging.
+- QR-based customer ordering endpoints
+- Table class system with per-class pricing and visibility rules
+- Real-time kitchen events via WebSockets
+- Waiter and Admin API endpoints
+- Role-based auth (admin / manager / staff)
+
+**Deferred:**
+Payments, billing, split bill, tips, discounts, analytics, receipt printing, inventory, loyalty program, audit logging.
 
 ## Architecture
 
 ```
 dineflow/
 ├── apps/
-│   ├── api/        Hono REST API + WebSocket (Node.js 20)
-│   └── web/        React 19 SPA (customer, admin, KDS, waiter)
+│   └── api/        Hono REST API + WebSocket (Node.js 20)
 ├── packages/
 │   ├── db/         Drizzle ORM schema, migrations, queries, seed
 │   ├── shared/     Zod validators, types, enums, role helpers
@@ -30,7 +28,6 @@ dineflow/
 ├── docker/
 │   ├── docker-compose.yml      Production stack
 │   ├── docker-compose.dev.yml  Dev: DB + Redis only
-│   ├── nginx.conf              SPA + API proxy + WebSocket
 │   └── Dockerfile.api          Multi-stage Bun→Node build
 └── scripts/
     └── install.sh  One-command production setup
@@ -38,17 +35,15 @@ dineflow/
 
 ## Tech Stack
 
-| Layer       | Technology                              |
-|-------------|-----------------------------------------|
-| Runtime     | Node.js 20+                             |
-| Pkg manager | Bun (workspaces + install only)         |
-| API         | Hono v4 + @hono/node-server             |
-| Frontend    | React 19 + TanStack Router v1 + Query v5|
-| Styling     | Tailwind CSS v4                         |
-| Database    | PostgreSQL 16 + Drizzle ORM             |
-| Real-time   | ws (WebSocket)                          |
-| Containers  | Docker + Docker Compose                 |
-| Local DNS   | Avahi/mDNS → `menu.local`              |
+| Layer       | Technology                      |
+| ----------- | ------------------------------- |
+| Runtime     | Node.js 20+                     |
+| Pkg manager | Bun (workspaces + install only) |
+| API         | Hono v4 + @hono/node-server     |
+| Database    | PostgreSQL 16 + Drizzle ORM     |
+| Real-time   | ws (WebSocket)                  |
+| Containers  | Docker + Docker Compose         |
+| Local DNS   | Avahi/mDNS → `menu.local`       |
 
 ## Prerequisites
 
@@ -75,7 +70,7 @@ bun run db:migrate
 # 5. Seed the database
 bun run db:seed
 
-# 6. Start all apps (API on :3000, Web on :5173)
+# 6. Start API (API on :3000)
 bun run dev
 ```
 
@@ -86,6 +81,7 @@ bash scripts/install.sh
 ```
 
 This script will:
+
 1. Install Docker and Bun if needed
 2. Generate a random `BETTER_AUTH_SECRET`
 3. Start all containers
@@ -94,18 +90,19 @@ This script will:
 
 ## Default Logins
 
-| Role    | Email                       | Password    |
-|---------|-----------------------------|-------------|
-| Admin   | admin@restaurant.local      | admin123    |
-| Manager | manager@restaurant.local    | manager123  |
-| Waiter  | waiter1@restaurant.local    | waiter123   |
-| Kitchen | kitchen1@restaurant.local   | kitchen123  |
+| Role    | Email                     | Password   |
+| ------- | ------------------------- | ---------- |
+| Admin   | admin@restaurant.local    | admin123   |
+| Manager | manager@restaurant.local  | manager123 |
+| Waiter  | waiter1@restaurant.local  | waiter123  |
+| Kitchen | kitchen1@restaurant.local | kitchen123 |
 
 ## How QR Codes Work
 
 Each table gets a QR code encoding `http://menu.local/table/{tableId}` (with `http://{LOCAL_IP}/table/{tableId}` as a fallback).
 
 When a customer scans the code:
+
 1. A session is created and linked to the table
 2. The menu loads filtered by the table's class (Regular/VIP/etc.)
 3. Prices are resolved server-side at order time using the class multiplier or override
@@ -121,18 +118,19 @@ admin (3)   — Full access: settings, table classes, all CRUD, all branches
 ```
 
 Staff can have a `staffType`:
+
 - `waiter` — Redirected to Waiter Dashboard on login
 - `kitchen` — Redirected to KDS on login
 - `cashier` — (future: redirected to payment terminal)
 
 ## WebSocket Channels
 
-| Channel              | Subscribers         | Events                                         |
-|----------------------|---------------------|------------------------------------------------|
-| `session:<id>`       | Customer            | `order:new`, `order:status_update`, `item:status_update` |
-| `kitchen:<branchId>` | Kitchen staff       | `order:new`, `order:status_update`, `item:status_update`, `item:availability` |
-| `waiter:<branchId>`  | Waiters             | `order:new`, `table:status_change`, `item:status_update` |
-| `admin`              | Admin/manager       | `item:availability`, `kitchen:alert`           |
+| Channel              | Subscribers   | Events                                                                        |
+| -------------------- | ------------- | ----------------------------------------------------------------------------- |
+| `session:<id>`       | Customer      | `order:new`, `order:status_update`, `item:status_update`                      |
+| `kitchen:<branchId>` | Kitchen staff | `order:new`, `order:status_update`, `item:status_update`, `item:availability` |
+| `waiter:<branchId>`  | Waiters       | `order:new`, `table:status_change`, `item:status_update`                      |
+| `admin`              | Admin/manager | `item:availability`, `kitchen:alert`                                          |
 
 ## Future Features Roadmap
 

@@ -2,7 +2,10 @@
   "name": "dineflow",
   "private": true,
   "packageManager": "bun@1.3.10",
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
@@ -13,7 +16,8 @@
     "db:generate": "turbo run db:generate --filter=@dineflow/db",
     "db:migrate": "turbo run db:migrate --filter=@dineflow/db",
     "db:studio": "turbo run db:studio --filter=@dineflow/db",
-    "db:seed": "turbo run db:seed --filter=@dineflow/db"
+    "db:seed": "turbo run db:seed --filter=@dineflow/db",
+    "db:seed:superadmin": "turbo run db:seed:superadmin --filter=@dineflow/db"
   },
   "devDependencies": {
     "turbo": "^2.3.3",

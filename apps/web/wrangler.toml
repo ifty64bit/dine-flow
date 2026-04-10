@@ -1,7 +1,0 @@
-name = "dineflow-web"
-pages_build_output_dir = "dist"
-compatibility_date = "2025-01-01"
-
-# Set VITE_API_URL during build:
-#   wrangler pages deploy dist --env VITE_API_URL=https://dineflow-api.<subdomain>.workers.dev
-# Or configure it in the Cloudflare Pages dashboard under Settings > Environment Variables.

@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmitOnError": false,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/db.ts",
+    "src/middleware/errors.ts",
+    "src/middleware/overlord-auth.ts",
+    "src/routes/overlord/**/*",
+    "src/overlord-app.ts"
+  ]
+}

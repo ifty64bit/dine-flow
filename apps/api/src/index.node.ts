@@ -3,11 +3,15 @@
  * Uses postgres-js driver so it works with a local Docker postgres instance.
  * For production (Cloudflare Workers), use index.ts instead.
  */
-import 'dotenv/config'
+import { config } from 'dotenv'
+import { resolve } from 'path'
 import { serve } from '@hono/node-server'
 import { createDbNode } from '@dineflow/db'
 import { initDb } from './db.js'
 import app from './index.js'
+
+config({ path: resolve(process.cwd(), '../../.env') })
+config({ path: resolve(process.cwd(), '.env') })
 
 const url = process.env.DATABASE_URL
 if (!url) throw new Error('DATABASE_URL is required')

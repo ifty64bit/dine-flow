@@ -11,7 +11,7 @@ export function initDb(url: string, factory: DbFactory = createDb) {
 }
 
 // Proxy so all existing `import { db }` across routes keep working unchanged.
-export const db = new Proxy({} as Db, {
+export const db: Db = new Proxy({} as Db, {
   get(_, prop) {
     if (!_db) throw new Error('DB not initialized — call initDb(url) first')
     return (_db as any)[prop]

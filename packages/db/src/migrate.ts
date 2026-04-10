@@ -16,7 +16,17 @@ if (!connectionString) {
 const client = postgres(connectionString, { max: 1 })
 const db = drizzle(client)
 
-console.log('Running migrations...')
-await migrate(db, { migrationsFolder: './migrations' })
-console.log('Migrations complete!')
-await client.end()
+async function runMigrations() {
+  console.log('Running migrations...')
+  await migrate(db, { migrationsFolder: './migrations' })
+  console.log('Migrations complete!')
+}
+
+runMigrations()
+  .catch((error) => {
+    console.error('Migration failed:', error)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await client.end()
+  })
