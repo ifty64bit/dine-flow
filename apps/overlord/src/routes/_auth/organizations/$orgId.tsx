@@ -4,7 +4,7 @@ import {
   ArrowLeft, Building2, Users, MapPin, CreditCard,
   Power, AlertCircle, CheckCircle, Clock,
 } from 'lucide-react'
-import { client } from '#/lib/client'
+import { client } from '@/lib/client'
 
 export const Route = createFileRoute('/_auth/organizations/$orgId')({
   component: OrgDetailPage,

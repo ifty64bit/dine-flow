@@ -2,7 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Building2, Search, ChevronRight, AlertCircle } from 'lucide-react'
-import { client } from '#/lib/client'
+import { client } from '@/lib/client'
 
 export const Route = createFileRoute('/_auth/organizations/')({
   component: OrganizationsPage,

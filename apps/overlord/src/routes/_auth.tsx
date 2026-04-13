@@ -1,4 +1,10 @@
-import { createFileRoute, redirect, Outlet, Link, useLocation } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  redirect,
+  Outlet,
+  Link,
+  useLocation,
+} from '@tanstack/react-router'
 import {
   LayoutDashboard,
   Building2,
@@ -9,7 +15,7 @@ import {
   Menu,
 } from 'lucide-react'
 import { useState } from 'react'
-import { useAuthStore } from '#/store/auth'
+import { useAuthStore } from '@/store/auth'
 
 export const Route = createFileRoute('/_auth')({
   beforeLoad: () => {
@@ -21,16 +27,16 @@ export const Route = createFileRoute('/_auth')({
 })
 
 const NAV = [
-  { to: '/dashboard',      label: 'Dashboard',      icon: LayoutDashboard },
-  { to: '/organizations',  label: 'Organizations',  icon: Building2       },
-  { to: '/plans',          label: 'Plans',          icon: CreditCard      },
-  { to: '/users',          label: 'Users',          icon: Users           },
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/organizations', label: 'Organizations', icon: Building2 },
+  { to: '/plans', label: 'Plans', icon: CreditCard },
+  { to: '/users', label: 'Users', icon: Users },
 ] as const
 
 function AuthLayout() {
-  const admin  = useAuthStore((s) => s.admin)
+  const admin = useAuthStore((s) => s.admin)
   const logout = useAuthStore((s) => s.logout)
-  const loc    = useLocation()
+  const loc = useLocation()
   const [open, setOpen] = useState(false)
 
   function isActive(to: string) {
@@ -62,7 +68,9 @@ function AuthLayout() {
             <Shield className="w-4 h-4 text-white" />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-zinc-100 truncate">Overlord</p>
+            <p className="text-sm font-semibold text-zinc-100 truncate">
+              Overlord
+            </p>
             <p className="text-xs text-zinc-500 truncate">Platform Admin</p>
           </div>
         </div>
@@ -76,9 +84,11 @@ function AuthLayout() {
               onClick={() => setOpen(false)}
               className={`
                 flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
-                ${isActive(to)
-                  ? 'bg-indigo-600/15 text-indigo-400'
-                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'}
+                ${
+                  isActive(to)
+                    ? 'bg-indigo-600/15 text-indigo-400'
+                    : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'
+                }
               `}
             >
               <Icon className="w-4 h-4 flex-shrink-0" />
@@ -94,7 +104,9 @@ function AuthLayout() {
               {admin?.name?.[0]?.toUpperCase() ?? 'A'}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-zinc-300 truncate">{admin?.name}</p>
+              <p className="text-xs font-medium text-zinc-300 truncate">
+                {admin?.name}
+              </p>
               <p className="text-xs text-zinc-600 truncate">{admin?.email}</p>
             </div>
           </div>

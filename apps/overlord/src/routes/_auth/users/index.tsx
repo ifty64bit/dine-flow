@@ -2,7 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Users, Search, AlertCircle, Building2, ChevronRight } from 'lucide-react'
-import { client } from '#/lib/client'
+import { client } from '@/lib/client'
 
 export const Route = createFileRoute('/_auth/users/')({
   component: UsersPage,
