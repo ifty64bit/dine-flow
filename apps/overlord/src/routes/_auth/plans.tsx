@@ -157,8 +157,22 @@ function PlanModal({
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Name" name="name" placeholder="Pro" form={form} errors={errors} set={set} />
-            <Field label="Slug" name="slug" placeholder="pro" form={form} errors={errors} set={set} />
+            <Field
+              label="Name"
+              name="name"
+              placeholder="Pro"
+              form={form}
+              errors={errors}
+              set={set}
+            />
+            <Field
+              label="Slug"
+              name="slug"
+              placeholder="pro"
+              form={form}
+              errors={errors}
+              set={set}
+            />
           </div>
           <Field
             label="Monthly Price (৳)"
@@ -169,7 +183,14 @@ function PlanModal({
             set={set}
           />
           <div className="grid grid-cols-3 gap-4">
-            <Field label="Max Branches" name="maxBranches" type="number" form={form} errors={errors} set={set} />
+            <Field
+              label="Max Branches"
+              name="maxBranches"
+              type="number"
+              form={form}
+              errors={errors}
+              set={set}
+            />
             <Field
               label="Max Users/Branch"
               name="maxUsersPerBranch"
@@ -187,7 +208,14 @@ function PlanModal({
               set={set}
             />
           </div>
-          <Field label="Sort Order" name="sortOrder" type="number" form={form} errors={errors} set={set} />
+          <Field
+            label="Sort Order"
+            name="sortOrder"
+            type="number"
+            form={form}
+            errors={errors}
+            set={set}
+          />
           <div className="space-y-1">
             <label className="text-xs font-medium text-zinc-400">
               Features <span className="text-zinc-600">(comma-separated)</span>

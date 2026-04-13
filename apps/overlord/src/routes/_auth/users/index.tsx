@@ -1,7 +1,13 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
-import { Users, Search, AlertCircle, Building2, ChevronRight } from 'lucide-react'
+import {
+  Users,
+  Search,
+  AlertCircle,
+  Building2,
+  ChevronRight,
+} from 'lucide-react'
 import { client } from '@/lib/client'
 
 export const Route = createFileRoute('/_auth/users/')({
@@ -10,25 +16,27 @@ export const Route = createFileRoute('/_auth/users/')({
 
 function RoleBadge({ role }: { role: string }) {
   const map: Record<string, string> = {
-    owner:   'bg-violet-500/10 text-violet-400 border-violet-500/20',
-    admin:   'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+    owner: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+    admin: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
     manager: 'bg-amber-500/10  text-amber-400  border-amber-500/20',
-    staff:   'bg-zinc-700/40   text-zinc-500   border-zinc-700',
+    staff: 'bg-zinc-700/40   text-zinc-500   border-zinc-700',
   }
   return (
-    <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${map[role] ?? map.staff}`}>
+    <span
+      className={`text-xs px-2 py-0.5 rounded-full border font-medium ${map[role] ?? map.staff}`}
+    >
       {role}
     </span>
   )
 }
 
 function UsersPage() {
-  const [search,   setSearch]   = useState('')
+  const [search, setSearch] = useState('')
   const [expanded, setExpanded] = useState<number | null>(null)
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['overlord', 'users'],
-    queryFn:  async () => {
+    queryFn: async () => {
       const res = await client.api.overlord.users.$get()
       if (!res.ok) throw new Error('Failed to load users')
       return res.json()
@@ -39,7 +47,7 @@ function UsersPage() {
     (u) =>
       search === '' ||
       u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase()),
+      u.email.toLowerCase().includes(search.toLowerCase())
   )
 
   return (
@@ -70,7 +78,10 @@ function UsersPage() {
         {/* Header */}
         <div className="hidden md:grid grid-cols-[1fr_200px_80px_36px] gap-4 px-5 py-3 border-b border-zinc-800">
           {['User', 'Organizations', 'Status', ''].map((h) => (
-            <span key={h} className="text-xs font-medium text-zinc-600 uppercase tracking-wide">
+            <span
+              key={h}
+              className="text-xs font-medium text-zinc-600 uppercase tracking-wide"
+            >
               {h}
             </span>
           ))}
@@ -103,28 +114,40 @@ function UsersPage() {
             <div key={user.id}>
               {/* Desktop row */}
               <button
-                onClick={() => setExpanded(expanded === user.id ? null : user.id)}
+                onClick={() =>
+                  setExpanded(expanded === user.id ? null : user.id)
+                }
                 className="hidden md:grid w-full grid-cols-[1fr_200px_80px_36px] gap-4 items-center px-5 py-3.5 hover:bg-zinc-800/50 transition-colors text-left group"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-400 flex-shrink-0 group-hover:bg-zinc-700">
+                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-400 shrink-0 group-hover:bg-zinc-700">
                     {user.name[0].toUpperCase()}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-zinc-200 truncate">{user.name}</p>
-                    <p className="text-xs text-zinc-600 truncate">{user.email}</p>
+                    <p className="text-sm font-medium text-zinc-200 truncate">
+                      {user.name}
+                    </p>
+                    <p className="text-xs text-zinc-600 truncate">
+                      {user.email}
+                    </p>
                   </div>
                 </div>
                 <div className="min-w-0">
                   {user.memberships.length === 0 ? (
                     <span className="text-xs text-zinc-600">—</span>
                   ) : user.memberships.length === 1 ? (
-                    <span className="text-xs text-zinc-400 truncate">{user.memberships[0].organizationName}</span>
+                    <span className="text-xs text-zinc-400 truncate">
+                      {user.memberships[0].organizationName}
+                    </span>
                   ) : (
-                    <span className="text-xs text-zinc-400">{user.memberships.length} orgs</span>
+                    <span className="text-xs text-zinc-400">
+                      {user.memberships.length} orgs
+                    </span>
                   )}
                 </div>
-                <span className={`text-xs font-medium ${user.isActive ? 'text-emerald-400' : 'text-zinc-600'}`}>
+                <span
+                  className={`text-xs font-medium ${user.isActive ? 'text-emerald-400' : 'text-zinc-600'}`}
+                >
                   {user.isActive ? 'Active' : 'Inactive'}
                 </span>
                 <ChevronRight
@@ -136,20 +159,26 @@ function UsersPage() {
 
               {/* Mobile row */}
               <button
-                onClick={() => setExpanded(expanded === user.id ? null : user.id)}
+                onClick={() =>
+                  setExpanded(expanded === user.id ? null : user.id)
+                }
                 className="md:hidden w-full flex items-center justify-between px-4 py-3.5 hover:bg-zinc-800/50 transition-colors"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-400 flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-400 shrink-0">
                     {user.name[0].toUpperCase()}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-zinc-200 truncate">{user.name}</p>
-                    <p className="text-xs text-zinc-600 truncate">{user.email}</p>
+                    <p className="text-sm font-medium text-zinc-200 truncate">
+                      {user.name}
+                    </p>
+                    <p className="text-xs text-zinc-600 truncate">
+                      {user.email}
+                    </p>
                   </div>
                 </div>
                 <ChevronRight
-                  className={`w-4 h-4 text-zinc-700 flex-shrink-0 transition-transform ${
+                  className={`w-4 h-4 text-zinc-700 shrink-0 transition-transform ${
                     expanded === user.id ? 'rotate-90' : ''
                   }`}
                 />
@@ -162,10 +191,15 @@ function UsersPage() {
                     Memberships
                   </p>
                   {user.memberships.length === 0 ? (
-                    <p className="text-xs text-zinc-600 py-1">Not a member of any organization</p>
+                    <p className="text-xs text-zinc-600 py-1">
+                      Not a member of any organization
+                    </p>
                   ) : (
                     user.memberships.map((m, i) => (
-                      <div key={i} className="flex items-center justify-between">
+                      <div
+                        key={i}
+                        className="flex items-center justify-between"
+                      >
                         <div className="flex items-center gap-2">
                           <Building2 className="w-3.5 h-3.5 text-zinc-600" />
                           <Link
@@ -176,7 +210,9 @@ function UsersPage() {
                             {m.organizationName}
                           </Link>
                           {m.branchName && (
-                            <span className="text-xs text-zinc-600">· {m.branchName}</span>
+                            <span className="text-xs text-zinc-600">
+                              · {m.branchName}
+                            </span>
                           )}
                         </div>
                         <RoleBadge role={m.role} />

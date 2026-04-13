@@ -64,7 +64,7 @@ function AuthLayout() {
       >
         {/* Brand */}
         <div className="flex items-center gap-2.5 px-5 py-4 border-b border-zinc-800">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0">
             <Shield className="w-4 h-4 text-white" />
           </div>
           <div className="min-w-0">
@@ -91,7 +91,7 @@ function AuthLayout() {
                 }
               `}
             >
-              <Icon className="w-4 h-4 flex-shrink-0" />
+              <Icon className="w-4 h-4 shrink-0" />
               {label}
             </Link>
           ))}

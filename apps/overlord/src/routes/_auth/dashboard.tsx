@@ -143,7 +143,7 @@ function DashboardPage() {
               className="flex items-center justify-between px-5 py-3.5"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-400 flex-shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-400 shrink-0">
                   {org.name[0].toUpperCase()}
                 </div>
                 <div className="min-w-0">
@@ -156,7 +156,7 @@ function DashboardPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-4 flex-shrink-0 ml-4">
+              <div className="flex items-center gap-4 shrink-0 ml-4">
                 <StatusBadge status={org.subscriptionStatus} />
                 <span className="text-xs text-zinc-600 hidden sm:block">
                   {new Date(org.createdAt).toLocaleDateString()}
