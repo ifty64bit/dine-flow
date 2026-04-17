@@ -1,18 +1,19 @@
 import { createMiddleware } from 'hono/factory'
 import { getCookie } from 'hono/cookie'
 import { db } from '../db.js'
-import { users } from '@dineflow/db'
+import { users, organizationMembers } from '@dineflow/db'
 import { eq } from 'drizzle-orm'
 import { UnauthorizedError, ForbiddenError } from './errors.js'
 import { hasPermission } from '@dineflow/shared'
 
 export interface AuthUser {
-  id: string
+  id: number
   email: string
   name: string
   role: string
   staffType: string | null
-  branchId: string | null
+  branchId: number | null
+  organizationId: number | null
 }
 
 declare module 'hono' {
@@ -23,9 +24,9 @@ declare module 'hono' {
 }
 
 // In-memory session store (sufficient for single-server MVP)
-const sessions = new Map<string, { userId: string; expiresAt: number }>()
+const sessions = new Map<string, { userId: number; expiresAt: number }>()
 
-export function createSessionToken(userId: string): string {
+export function createSessionToken(userId: number): string {
   const token = Buffer.from(`${userId}:${Date.now()}:${Math.random()}`).toString('base64url')
   sessions.set(token, { userId, expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000 })
   return token
@@ -48,13 +49,20 @@ export async function resolveSession(token: string): Promise<AuthUser | null> {
   })
   if (!user || !user.isActive) return null
 
+  // Get role/branch from their first active organization membership
+  const membership = await db.query.organizationMembers.findFirst({
+    where: eq(organizationMembers.userId, user.id),
+    orderBy: (m, { desc }) => [desc(m.createdAt)],
+  })
+
   return {
     id: user.id,
     email: user.email,
     name: user.name,
-    role: user.role,
-    staffType: user.staffType,
-    branchId: user.branchId,
+    role: membership?.role ?? 'staff',
+    staffType: membership?.staffType ?? null,
+    branchId: membership?.branchId ?? null,
+    organizationId: membership?.organizationId ?? null,
   }
 }
 

@@ -8,49 +8,48 @@ import { requireAuth } from '../../middleware/auth.js'
 import { NotFoundError } from '../../middleware/errors.js'
 import { broadcast } from '../../ws/index.js'
 
-export const kitchenOrderRoutes = new Hono()
-
-kitchenOrderRoutes.use('*', requireAuth)
-
-kitchenOrderRoutes.get('/:branchId', async (c) => {
-  const branchId = c.req.param('branchId')
-
-  const activeOrders = await db.query.orders.findMany({
-    where: inArray(orders.status, ['placed', 'confirmed', 'preparing']),
-    with: {
-      items: {
-        with: { menuItem: true },
-        orderBy: (i, { asc }) => [asc(i.createdAt)],
-      },
-      session: {
-        with: { table: { with: { floor: true } } },
-      },
-    },
-    orderBy: (o, { asc }) => [asc(o.createdAt)],
-  })
-
-  const branchOrders = activeOrders.filter(
-    (o) => o.session.table.floor.branchId === branchId
-  )
-
-  return c.json({
-    data: {
-      placed: branchOrders.filter((o) => o.status === 'placed'),
-      confirmed: branchOrders.filter((o) => o.status === 'confirmed'),
-      preparing: branchOrders.filter((o) => o.status === 'preparing'),
-    },
-  })
-})
-
 const updateItemStatusSchema = z.object({
   status: z.enum(['queued', 'preparing', 'ready', 'served']),
 })
 
-kitchenOrderRoutes.put(
-  '/items/:orderItemId/status',
-  zValidator('json', updateItemStatusSchema),
-  async (c) => {
-    const orderItemId = c.req.param('orderItemId')
+const toggleAvailabilitySchema = z.object({ isAvailable: z.boolean() })
+
+const updateOrderStatusSchema = z.object({
+  status: z.enum(['placed', 'confirmed', 'preparing', 'ready', 'served', 'cancelled']),
+})
+
+export const kitchenOrderRoutes = new Hono()
+  .use('*', requireAuth)
+  .get('/:branchId', async (c) => {
+    const branchId = Number(c.req.param('branchId'))
+
+    const activeOrders = await db.query.orders.findMany({
+      where: inArray(orders.status, ['placed', 'confirmed', 'preparing']),
+      with: {
+        items: {
+          with: { menuItem: true },
+          orderBy: (i, { asc }) => [asc(i.createdAt)],
+        },
+        session: {
+          with: { table: true },
+        },
+      },
+      orderBy: (o, { asc }) => [asc(o.createdAt)],
+    })
+
+    // Sessions have branchId directly (denormalized)
+    const branchOrders = activeOrders.filter((o) => o.session.branchId === branchId)
+
+    return c.json({
+      data: {
+        placed: branchOrders.filter((o) => o.status === 'placed'),
+        confirmed: branchOrders.filter((o) => o.status === 'confirmed'),
+        preparing: branchOrders.filter((o) => o.status === 'preparing'),
+      },
+    })
+  })
+  .put('/items/:orderItemId/status', zValidator('json', updateItemStatusSchema), async (c) => {
+    const orderItemId = Number(c.req.param('orderItemId'))
     const { status } = c.req.valid('json')
 
     const [item] = await db
@@ -62,11 +61,11 @@ kitchenOrderRoutes.put(
 
     const order = await db.query.orders.findFirst({
       where: eq(orders.id, item.orderId),
-      with: { session: { with: { table: { with: { floor: true } } } } },
+      with: { session: true },
     })
 
     if (order) {
-      const branchId = order.session.table.floor.branchId
+      const branchId = order.session.branchId
       const wsPayload = {
         orderItemId: item.id,
         orderId: item.orderId,
@@ -102,16 +101,9 @@ kitchenOrderRoutes.put(
     }
 
     return c.json({ data: item })
-  }
-)
-
-const toggleAvailabilitySchema = z.object({ isAvailable: z.boolean() })
-
-kitchenOrderRoutes.put(
-  '/menu/:menuItemId/availability',
-  zValidator('json', toggleAvailabilitySchema),
-  async (c) => {
-    const menuItemId = c.req.param('menuItemId')
+  })
+  .put('/menu/:menuItemId/availability', zValidator('json', toggleAvailabilitySchema), async (c) => {
+    const menuItemId = Number(c.req.param('menuItemId'))
     const { isAvailable } = c.req.valid('json')
 
     const [item] = await db
@@ -127,18 +119,9 @@ kitchenOrderRoutes.put(
     })
 
     return c.json({ data: item })
-  }
-)
-
-const updateOrderStatusSchema = z.object({
-  status: z.enum(['placed', 'confirmed', 'preparing', 'ready', 'served', 'cancelled']),
-})
-
-kitchenOrderRoutes.put(
-  '/orders/:orderId/status',
-  zValidator('json', updateOrderStatusSchema),
-  async (c) => {
-    const orderId = c.req.param('orderId')
+  })
+  .put('/orders/:orderId/status', zValidator('json', updateOrderStatusSchema), async (c) => {
+    const orderId = Number(c.req.param('orderId'))
     const { status } = c.req.valid('json')
 
     const [order] = await db
@@ -150,10 +133,10 @@ kitchenOrderRoutes.put(
 
     const fullOrder = await db.query.orders.findFirst({
       where: eq(orders.id, orderId),
-      with: { session: { with: { table: { with: { floor: true } } } } },
+      with: { session: true },
     })
     if (fullOrder) {
-      const branchId = fullOrder.session.table.floor.branchId
+      const branchId = fullOrder.session.branchId
       const wsPayload = {
         orderId: order.id,
         orderNumber: order.orderNumber,
@@ -167,5 +150,4 @@ kitchenOrderRoutes.put(
     }
 
     return c.json({ data: order })
-  }
-)
+  })

@@ -8,19 +8,19 @@ import { NotFoundError } from '../../middleware/errors.js'
 export const customerMenuRoutes = new Hono()
 
 customerMenuRoutes.get('/:branchId', async (c) => {
-  const branchId = c.req.param('branchId')
+  const branchId = Number(c.req.param('branchId'))
   const tableId = c.req.query('table')
 
   if (!tableId) {
     return c.json({ error: 'table query parameter is required' }, 400)
   }
 
-  const menu = await getMenuForTable(db, branchId, tableId)
+  const menu = await getMenuForTable(db, branchId, Number(tableId))
   return c.json({ data: menu })
 })
 
 customerMenuRoutes.get('/:branchId/items/:id', async (c) => {
-  const itemId = c.req.param('id')
+  const itemId = Number(c.req.param('id'))
   const tableId = c.req.query('table')
 
   const item = await db.query.menuItems.findFirst({
@@ -48,7 +48,7 @@ customerMenuRoutes.get('/:branchId/items/:id', async (c) => {
   let resolvedPrice = parseFloat(item.basePrice)
   if (tableId) {
     const table = await db.query.tables.findFirst({
-      where: eq(tables.id, tableId),
+      where: eq(tables.id, Number(tableId)),
       with: { tableClass: true },
     })
     if (table) {

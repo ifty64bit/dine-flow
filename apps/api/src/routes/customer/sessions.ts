@@ -14,7 +14,7 @@ customerSessionRoutes.post('/start', zValidator('json', startSessionSchema), asy
 
   const table = await db.query.tables.findFirst({
     where: eq(tables.id, tableId),
-    with: { floor: { with: { branch: true } }, tableClass: true },
+    with: { tableClass: true },
   })
   if (!table) throw new NotFoundError('Table')
 
@@ -34,19 +34,19 @@ customerSessionRoutes.post('/start', zValidator('json', startSessionSchema), asy
     .insert(sessions)
     .values({
       tableId,
+      branchId: table.branchId,
       tableClassId: table.tableClassId,
       guestName: guestName ?? null,
       isActive: true,
     })
     .returning()
 
-  broadcast(`waiter:${table.floor.branchId}`, {
+  broadcast(`waiter:${table.branchId}`, {
     type: 'table:status_change',
     payload: {
       tableId: table.id,
       tableNumber: table.number,
-      floorId: table.floorId,
-      branchId: table.floor.branchId,
+      branchId: table.branchId,
       status: 'occupied',
       updatedAt: new Date().toISOString(),
     },
@@ -56,7 +56,7 @@ customerSessionRoutes.post('/start', zValidator('json', startSessionSchema), asy
 })
 
 customerSessionRoutes.get('/:id', async (c) => {
-  const sessionId = c.req.param('id')
+  const sessionId = Number(c.req.param('id'))
   const session = await db.query.sessions.findFirst({
     where: eq(sessions.id, sessionId),
     with: { table: { with: { tableClass: true } } },

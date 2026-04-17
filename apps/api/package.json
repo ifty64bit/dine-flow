@@ -8,6 +8,9 @@
     },
     "./overlord-app": {
       "types": "./dist/overlord-app.d.ts"
+    },
+    "./restaurant-app": {
+      "types": "./dist/restaurant-app.d.ts"
     }
   },
   "scripts": {

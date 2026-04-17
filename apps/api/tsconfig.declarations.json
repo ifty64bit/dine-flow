@@ -9,8 +9,14 @@
   "include": [
     "src/db.ts",
     "src/middleware/errors.ts",
+    "src/middleware/auth.ts",
     "src/middleware/overlord-auth.ts",
     "src/routes/overlord/**/*",
-    "src/overlord-app.ts"
+    "src/routes/auth.ts",
+    "src/routes/admin/**/*",
+    "src/routes/kitchen/**/*",
+    "src/routes/waiter/**/*",
+    "src/overlord-app.ts",
+    "src/restaurant-app.ts"
   ]
 }

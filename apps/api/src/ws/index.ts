@@ -8,7 +8,7 @@ import type { WsEvent } from '@dineflow/shared'
 const channels = new Map<string, Set<WebSocket>>()
 
 // Client metadata
-const clientMeta = new Map<WebSocket, { userId: string; channels: Set<string> }>()
+const clientMeta = new Map<WebSocket, { userId: number; channels: Set<string> }>()
 
 export function setupWebSocket(server: Server): WebSocketServer {
   const wss = new WebSocketServer({ server, path: '/ws' })

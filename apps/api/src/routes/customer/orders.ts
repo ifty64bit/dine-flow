@@ -8,7 +8,7 @@ import {
   orderItems,
   menuItems,
   menuItemClassRules,
-  settings,
+  modifiers,
 } from '@dineflow/db'
 import { createOrderSchema } from '@dineflow/shared'
 import { NotFoundError, ValidationError } from '../../middleware/errors.js'
@@ -24,10 +24,7 @@ customerOrderRoutes.post('/', zValidator('json', createOrderSchema), async (c) =
     where: and(eq(sessions.id, sessionId), eq(sessions.isActive, true)),
     with: {
       table: {
-        with: {
-          tableClass: true,
-          floor: { with: { branch: true } },
-        },
+        with: { tableClass: true },
       },
     },
   })
@@ -35,14 +32,14 @@ customerOrderRoutes.post('/', zValidator('json', createOrderSchema), async (c) =
 
   const tableClass = session.table.tableClass
   const multiplier = parseFloat(tableClass.priceMultiplier)
-  const branchId = session.table.floor.branchId
+  const branchId = session.branchId
 
   let subtotal = 0
   const resolvedItems: {
-    menuItemId: string
+    menuItemId: number
     quantity: number
     unitPrice: number
-    modifiers: { modifierId: string; name: string; priceAdjustment: number }[]
+    modifiers: { modifierId: number; modifierGroupId: number; name: string; priceAdjustment: number }[]
     specialInstructions: string | undefined
     station: string | null
     name: string
@@ -62,14 +59,27 @@ customerOrderRoutes.post('/', zValidator('json', createOrderSchema), async (c) =
       ),
     })
 
-    let baseItemPrice: number
-    if (rule?.priceOverride) {
-      baseItemPrice = parseFloat(rule.priceOverride)
-    } else {
-      baseItemPrice = parseFloat(item.basePrice) * multiplier
+    const baseItemPrice = rule?.priceOverride
+      ? parseFloat(rule.priceOverride)
+      : parseFloat(item.basePrice) * multiplier
+
+    // Resolve modifier details from DB
+    const resolvedModifiers: { modifierId: number; modifierGroupId: number; name: string; priceAdjustment: number }[] = []
+    for (const mod of input.modifiers) {
+      const modifier = await db.query.modifiers.findFirst({
+        where: eq(modifiers.id, mod.modifierId),
+      })
+      if (modifier) {
+        resolvedModifiers.push({
+          modifierId: modifier.id,
+          modifierGroupId: mod.modifierGroupId,
+          name: modifier.name,
+          priceAdjustment: parseFloat(modifier.priceAdjustment),
+        })
+      }
     }
 
-    const modifierTotal = input.modifiers.reduce((sum, mod) => sum + mod.priceAdjustment, 0)
+    const modifierTotal = resolvedModifiers.reduce((sum, m) => sum + m.priceAdjustment, 0)
     const unitPrice = baseItemPrice + modifierTotal
     subtotal += unitPrice * input.quantity
 
@@ -77,16 +87,16 @@ customerOrderRoutes.post('/', zValidator('json', createOrderSchema), async (c) =
       menuItemId: item.id,
       quantity: input.quantity,
       unitPrice,
-      modifiers: input.modifiers,
+      modifiers: resolvedModifiers,
       specialInstructions: input.specialInstructions,
       station: item.station,
       name: item.name,
     })
   }
 
-  const [restaurantSettings] = await db.select().from(settings).limit(1)
-  const taxRate = restaurantSettings ? parseFloat(restaurantSettings.taxRate) : 0
-  const serviceChargeRate = restaurantSettings ? parseFloat(restaurantSettings.serviceChargeRate) : 0
+  // Use hardcoded defaults (no settings table — configure per-organization when needed)
+  const taxRate = 0
+  const serviceChargeRate = 0
   const taxAmount = taxRate > 0 ? subtotal * (taxRate / 100) : 0
   const serviceCharge = serviceChargeRate > 0 ? subtotal * (serviceChargeRate / 100) : 0
   const total = subtotal + taxAmount + serviceCharge
@@ -97,6 +107,7 @@ customerOrderRoutes.post('/', zValidator('json', createOrderSchema), async (c) =
     .insert(orders)
     .values({
       sessionId,
+      branchId,
       orderNumber,
       status: 'placed',
       subtotal: subtotal.toFixed(2),
@@ -150,7 +161,7 @@ customerOrderRoutes.post('/', zValidator('json', createOrderSchema), async (c) =
 })
 
 customerOrderRoutes.get('/session/:sessionId', async (c) => {
-  const sessionId = c.req.param('sessionId')
+  const sessionId = Number(c.req.param('sessionId'))
   const sessionOrders = await db.query.orders.findMany({
     where: eq(orders.sessionId, sessionId),
     with: {

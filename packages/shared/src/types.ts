@@ -21,14 +21,14 @@ export interface PaginatedResponse<T> {
 export interface WsEventOrderNew {
   type: 'order:new'
   payload: {
-    orderId: string
+    orderId: number
     orderNumber: string
-    sessionId: string
-    tableId: string
+    sessionId: number
+    tableId: number
     tableNumber: number
-    branchId: string
+    branchId: number
     items: {
-      id: string
+      id: number
       name: string
       quantity: number
       station: string | null
@@ -41,9 +41,9 @@ export interface WsEventOrderNew {
 export interface WsEventOrderStatusUpdate {
   type: 'order:status_update'
   payload: {
-    orderId: string
+    orderId: number
     orderNumber: string
-    sessionId: string
+    sessionId: number
     status: string
     updatedAt: string
   }
@@ -52,9 +52,9 @@ export interface WsEventOrderStatusUpdate {
 export interface WsEventItemStatusUpdate {
   type: 'item:status_update'
   payload: {
-    orderItemId: string
-    orderId: string
-    sessionId: string
+    orderItemId: number
+    orderId: number
+    sessionId: number
     status: string
     updatedAt: string
   }
@@ -63,10 +63,9 @@ export interface WsEventItemStatusUpdate {
 export interface WsEventTableStatusChange {
   type: 'table:status_change'
   payload: {
-    tableId: string
+    tableId: number
     tableNumber: number
-    floorId: string
-    branchId: string
+    branchId: number
     status: string
     updatedAt: string
   }
@@ -75,7 +74,7 @@ export interface WsEventTableStatusChange {
 export interface WsEventItemAvailability {
   type: 'item:availability'
   payload: {
-    menuItemId: string
+    menuItemId: number
     name: string
     isAvailable: boolean
   }
@@ -86,7 +85,7 @@ export interface WsEventKitchenAlert {
   payload: {
     message: string
     severity: 'info' | 'warning' | 'error'
-    branchId: string
+    branchId: number
   }
 }
 

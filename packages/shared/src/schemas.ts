@@ -22,14 +22,14 @@ export const createBranchSchema = z.object({
 })
 export const updateBranchSchema = createBranchSchema.partial()
 
-// User
+// User (staff)
 export const createUserSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   name: z.string().min(1).max(255),
   role: z.enum(['admin', 'manager', 'staff']),
   staffType: z.enum(['waiter', 'kitchen', 'cashier']).optional(),
-  branchId: z.string().uuid().optional(),
+  branchId: z.number().int().positive().optional(),
   isActive: z.boolean().optional().default(true),
 })
 export const updateUserSchema = createUserSchema.omit({ password: true }).partial().extend({
@@ -51,9 +51,10 @@ export const updateTableClassSchema = createTableClassSchema.partial()
 
 // Table
 export const createTableSchema = z.object({
-  floorId: z.string().uuid(),
-  tableClassId: z.string().uuid(),
+  branchId: z.number().int().positive(),
+  tableClassId: z.number().int().positive(),
   number: z.number().int().positive(),
+  floorName: z.string().max(100).optional(),
   capacity: z.number().int().positive().default(4),
   shape: z.enum(['round', 'square', 'rectangle']).default('square'),
   positionX: z.string().optional().default('0'),
@@ -66,7 +67,7 @@ export const updateTableSchema = createTableSchema.partial()
 
 // Menu Category
 export const createMenuCategorySchema = z.object({
-  branchId: z.string().uuid().optional(),
+  branchId: z.number().int().positive().optional(),
   name: z.string().min(1).max(100),
   description: z.string().optional(),
   imageUrl: z.string().url().optional(),
@@ -77,8 +78,8 @@ export const updateMenuCategorySchema = createMenuCategorySchema.partial()
 
 // Menu Item
 export const createMenuItemSchema = z.object({
-  categoryId: z.string().uuid(),
-  branchId: z.string().uuid().optional(),
+  categoryId: z.number().int().positive(),
+  branchId: z.number().int().positive().optional(),
   name: z.string().min(1).max(255),
   description: z.string().optional(),
   basePrice: z.string().regex(/^\d+(\.\d{1,2})?$/),
@@ -95,13 +96,14 @@ export const updateMenuItemSchema = createMenuItemSchema.partial()
 
 // Menu Item Class Rule
 export const createMenuItemClassRuleSchema = z.object({
-  tableClassId: z.string().uuid(),
+  tableClassId: z.number().int().positive(),
   ruleType: z.enum(['include', 'exclude']),
   priceOverride: z.string().regex(/^\d+(\.\d{1,2})?$/).optional(),
 })
 
 // Modifier Group
 export const createModifierGroupSchema = z.object({
+  branchId: z.number().int().positive(),
   name: z.string().min(1).max(100),
   isRequired: z.boolean().default(false),
   minSelect: z.number().int().min(0).default(0),
@@ -111,7 +113,7 @@ export const updateModifierGroupSchema = createModifierGroupSchema.partial()
 
 // Modifier
 export const createModifierSchema = z.object({
-  groupId: z.string().uuid(),
+  groupId: z.number().int().positive(),
   name: z.string().min(1).max(100),
   priceAdjustment: z.string().regex(/^-?\d+(\.\d{1,2})?$/).default('0'),
   sortOrder: z.number().int().default(0),
@@ -121,7 +123,7 @@ export const updateModifierSchema = createModifierSchema.partial()
 
 // Session
 export const startSessionSchema = z.object({
-  tableId: z.string().uuid(),
+  tableId: z.number().int().positive(),
   guestName: z.string().max(255).optional(),
 })
 
@@ -163,9 +165,9 @@ export const createOrderSchema = z.object({
 
 // Reservation
 export const createReservationSchema = z.object({
-  branchId: z.string().uuid(),
-  tableId: z.string().uuid().optional(),
-  preferredClassId: z.string().uuid().optional(),
+  branchId: z.number().int().positive(),
+  tableId: z.number().int().positive().optional(),
+  preferredClassId: z.number().int().positive().optional(),
   customerName: z.string().min(1).max(255),
   customerPhone: z.string().min(1).max(50),
   partySize: z.number().int().positive(),
@@ -194,4 +196,13 @@ export const updateSettingsSchema = z.object({
 export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
+})
+
+export const registerSchema = z.object({
+  orgName: z.string().min(2).max(255),
+  name: z.string().min(1).max(255),
+  email: z.string().email(),
+  password: z.string().min(8).max(100),
+  currency: z.string().max(10).optional().default('BDT'),
+  timezone: z.string().max(100).optional().default('Asia/Dhaka'),
 })

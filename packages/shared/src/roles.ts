@@ -1,4 +1,5 @@
 export const ROLE_HIERARCHY = {
+  owner: 4,
   admin: 3,
   manager: 2,
   staff: 1,
