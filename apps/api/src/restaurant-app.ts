@@ -18,6 +18,7 @@ import { customerTableRoutes } from './routes/customer/table.js'
 import { customerMenuRoutes } from './routes/customer/menu.js'
 import { customerSessionRoutes } from './routes/customer/sessions.js'
 import { customerOrderRoutes } from './routes/customer/orders.js'
+import { eventsRoutes } from './routes/events.js'
 
 const restaurantApp = new Hono()
   .route('/auth', authRoutes)
@@ -34,5 +35,6 @@ const restaurantApp = new Hono()
   .route('/api/v1/customer/menu', customerMenuRoutes)
   .route('/api/v1/customer/session', customerSessionRoutes)
   .route('/api/v1/customer/orders', customerOrderRoutes)
+  .route('/api/v1/events', eventsRoutes)
 
 export type RestaurantAppType = typeof restaurantApp

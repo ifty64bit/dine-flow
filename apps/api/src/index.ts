@@ -17,17 +17,21 @@ import { adminQrRoutes } from './routes/admin/qr.js'
 import { kitchenOrderRoutes } from './routes/kitchen/orders.js'
 import { waiterRoutes } from './routes/waiter/index.js'
 import { overlordRoutes } from './routes/overlord/index.js'
+import { eventsRoutes } from './routes/events.js'
 import { AppError } from './middleware/errors.js'
+import { initAuth } from './middleware/auth.js'
 
 type Bindings = {
   DATABASE_URL: string
   BETTER_AUTH_SECRET: string
+  NODE_ENV?: string
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
 
 app.use('*', async (c, next) => {
   initDb(c.env.DATABASE_URL)
+  initAuth(c.env.BETTER_AUTH_SECRET)
   await next()
 })
 
@@ -72,6 +76,9 @@ app.route('/api/v1/waiter', waiterRoutes)
 
 // Overlord (platform admin)
 app.route('/api/overlord', overlordRoutes)
+
+// Long polling event stream
+app.route('/api/v1/events', eventsRoutes)
 
 // Error handling
 app.onError((err, c) => {

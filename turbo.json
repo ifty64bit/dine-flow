@@ -42,6 +42,14 @@
     "db:seed:superadmin": {
       "cache": false,
       "dependsOn": ["^build"]
+    },
+    "deploy": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "deploy:dry": {
+      "dependsOn": ["build"],
+      "cache": false
     }
   }
 }

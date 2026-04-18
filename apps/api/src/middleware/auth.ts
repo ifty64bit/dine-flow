@@ -23,33 +23,67 @@ declare module 'hono' {
   }
 }
 
-// In-memory session store (sufficient for single-server MVP)
-const sessions = new Map<string, { userId: number; expiresAt: number }>()
+let _secret = ''
 
-export function createSessionToken(userId: number): string {
-  const token = Buffer.from(`${userId}:${Date.now()}:${Math.random()}`).toString('base64url')
-  sessions.set(token, { userId, expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000 })
-  return token
+export function initAuth(secret: string): void {
+  _secret = secret
 }
 
-export function invalidateSession(token: string): void {
-  sessions.delete(token)
+const enc = new TextEncoder()
+const SESSION_TTL = 7 * 24 * 60 * 60 // seconds
+
+function bufToBase64Url(buf: ArrayBuffer): string {
+  const bytes = new Uint8Array(buf)
+  let binary = ''
+  for (const b of bytes) binary += String.fromCharCode(b)
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
 }
+
+async function hmacSign(payload: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    enc.encode(_secret || 'dev-secret'),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  )
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(payload))
+  return bufToBase64Url(sig)
+}
+
+export async function createSessionToken(userId: number): Promise<string> {
+  const exp = Math.floor(Date.now() / 1000) + SESSION_TTL
+  const payload = btoa(JSON.stringify({ userId, exp }))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+  const sig = await hmacSign(payload)
+  return `${payload}.${sig}`
+}
+
+// Stateless tokens cannot be server-side revoked; clearing the cookie on logout is sufficient.
+export function invalidateSession(_token: string): void {}
 
 export async function resolveSession(token: string): Promise<AuthUser | null> {
-  const session = sessions.get(token)
-  if (!session) return null
-  if (session.expiresAt < Date.now()) {
-    sessions.delete(token)
+  const dot = token.lastIndexOf('.')
+  if (dot === -1) return null
+  const payload = token.slice(0, dot)
+  const sig = token.slice(dot + 1)
+
+  const expectedSig = await hmacSign(payload)
+  if (expectedSig !== sig) return null
+
+  let data: { userId: number; exp: number }
+  try {
+    data = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')))
+  } catch {
     return null
   }
+  if (data.exp < Math.floor(Date.now() / 1000)) return null
 
   const user = await db.query.users.findFirst({
-    where: eq(users.id, session.userId),
+    where: eq(users.id, data.userId),
   })
   if (!user || !user.isActive) return null
 
-  // Get role/branch from their first active organization membership
   const membership = await db.query.organizationMembers.findFirst({
     where: eq(organizationMembers.userId, user.id),
     orderBy: (m, { desc }) => [desc(m.createdAt)],

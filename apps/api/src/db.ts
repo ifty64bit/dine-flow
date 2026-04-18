@@ -1,7 +1,8 @@
 import { createDb } from '@dineflow/db'
 import type { Db } from '@dineflow/db'
 
-type DbFactory = (url: string) => Db
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DbFactory = (url: string) => any
 
 let _db: Db | null = null
 

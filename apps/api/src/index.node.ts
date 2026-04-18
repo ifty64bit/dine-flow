@@ -8,15 +8,19 @@ import { resolve } from 'path'
 import { serve } from '@hono/node-server'
 import { createDbNode } from '@dineflow/db'
 import { initDb } from './db.js'
+import { initAuth } from './middleware/auth.js'
 import app from './index.js'
 
 config({ path: resolve(process.cwd(), '../../.env') })
 config({ path: resolve(process.cwd(), '.env') })
 
-const url = process.env.DATABASE_URL
-if (!url) throw new Error('DATABASE_URL is required')
+const dbUrl = process.env.DATABASE_URL
+if (!dbUrl) throw new Error('DATABASE_URL is required')
 
-initDb(url, createDbNode)
+const authSecret = process.env.BETTER_AUTH_SECRET ?? 'dev-secret-change-me'
+
+initDb(dbUrl, createDbNode)
+initAuth(authSecret)
 
 const port = parseInt(process.env.PORT ?? '3000', 10)
 serve({ fetch: app.fetch, port, hostname: '0.0.0.0' }, (info) => {

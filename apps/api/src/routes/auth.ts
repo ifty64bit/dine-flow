@@ -74,11 +74,12 @@ export const authRoutes = new Hono()
       return { org, user }
     })
 
-    const token = createSessionToken(result.user.id)
+    const token = await createSessionToken(result.user.id)
+    const isSecure = (c.env as Record<string, string> | undefined)?.NODE_ENV === 'production'
 
     setCookie(c, 'dineflow_session', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isSecure,
       sameSite: 'Lax',
       maxAge: 7 * 24 * 60 * 60,
       path: '/',
@@ -127,11 +128,12 @@ export const authRoutes = new Hono()
       orderBy: (m, { desc }) => [desc(m.createdAt)],
     })
 
-    const token = createSessionToken(user.id)
+    const token = await createSessionToken(user.id)
+    const isSecure = (c.env as Record<string, string> | undefined)?.NODE_ENV === 'production'
 
     setCookie(c, 'dineflow_session', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: isSecure,
       sameSite: 'Lax',
       maxAge: 7 * 24 * 60 * 60,
       path: '/',

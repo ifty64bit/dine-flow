@@ -17,7 +17,12 @@
     "db:migrate": "turbo run db:migrate --filter=@dineflow/db",
     "db:studio": "turbo run db:studio --filter=@dineflow/db",
     "db:seed": "turbo run db:seed --filter=@dineflow/db",
-    "db:seed:superadmin": "turbo run db:seed:superadmin --filter=@dineflow/db"
+    "db:seed:superadmin": "turbo run db:seed:superadmin --filter=@dineflow/db",
+    "deploy:api": "turbo run deploy --filter=@dineflow/api",
+    "deploy:portal": "turbo run deploy --filter=@dineflow/portal",
+    "deploy:menu": "turbo run deploy --filter=@dineflow/menu",
+    "deploy:overlord": "turbo run deploy --filter=@dineflow/overlord",
+    "deploy:all": "turbo run deploy --filter=@dineflow/api --filter=@dineflow/portal --filter=@dineflow/menu --filter=@dineflow/overlord"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

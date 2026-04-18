@@ -9,7 +9,9 @@
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "lint": "biome check",
-    "format": "biome format --write"
+    "format": "biome format --write",
+    "deploy": "bun run build && wrangler pages deploy dist",
+    "deploy:dry": "bun run build && wrangler pages deploy dist --dry-run"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.16",

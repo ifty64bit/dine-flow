@@ -10,3 +10,6 @@ compatibility_flags = ["nodejs_compat"]
 # [vars] is for non-sensitive config only.
 [vars]
 NODE_ENV = "production"
+
+# After deploying, add a custom domain via the CF dashboard or:
+#   wrangler custom-domains add api.yourdomain.com
