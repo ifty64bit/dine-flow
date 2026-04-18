@@ -1,0 +1,32 @@
+{
+  "name": "@dineflow/menu",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5001",
+    "build": "tsc && vite build",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.62.16",
+    "@tanstack/react-router": "^1.132.0",
+    "@tanstack/router-plugin": "^1.132.0",
+    "hono": "^4.7.2",
+    "lucide-react": "^1.8.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tailwindcss": "^4.1.18",
+    "@tailwindcss/vite": "^4.1.18"
+  },
+  "devDependencies": {
+    "@dineflow/api": "workspace:*",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.1.4",
+    "typescript": "^5.7.2",
+    "vite": "^7.3.1",
+    "vite-tsconfig-paths": "^5.1.4"
+  }
+}

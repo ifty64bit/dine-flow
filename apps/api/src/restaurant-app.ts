@@ -14,6 +14,10 @@ import { adminBranchRoutes } from './routes/admin/branches.js'
 import { adminQrRoutes } from './routes/admin/qr.js'
 import { kitchenOrderRoutes } from './routes/kitchen/orders.js'
 import { waiterRoutes } from './routes/waiter/index.js'
+import { customerTableRoutes } from './routes/customer/table.js'
+import { customerMenuRoutes } from './routes/customer/menu.js'
+import { customerSessionRoutes } from './routes/customer/sessions.js'
+import { customerOrderRoutes } from './routes/customer/orders.js'
 
 const restaurantApp = new Hono()
   .route('/auth', authRoutes)
@@ -26,5 +30,9 @@ const restaurantApp = new Hono()
   .route('/api/v1/admin/qr', adminQrRoutes)
   .route('/api/v1/kitchen', kitchenOrderRoutes)
   .route('/api/v1/waiter', waiterRoutes)
+  .route('/api/v1/customer/table', customerTableRoutes)
+  .route('/api/v1/customer/menu', customerMenuRoutes)
+  .route('/api/v1/customer/session', customerSessionRoutes)
+  .route('/api/v1/customer/orders', customerOrderRoutes)
 
 export type RestaurantAppType = typeof restaurantApp

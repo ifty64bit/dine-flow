@@ -6,6 +6,7 @@ import { authRoutes } from './routes/auth.js'
 import { customerMenuRoutes } from './routes/customer/menu.js'
 import { customerSessionRoutes } from './routes/customer/sessions.js'
 import { customerOrderRoutes } from './routes/customer/orders.js'
+import { customerTableRoutes } from './routes/customer/table.js'
 import { adminMenuRoutes } from './routes/admin/menu.js'
 import { adminTableRoutes } from './routes/admin/tables.js'
 import { adminStaffRoutes } from './routes/admin/staff.js'
@@ -49,6 +50,7 @@ app.get('/health', (c) =>
 app.route('/auth', authRoutes)
 
 // Customer (public)
+app.route('/api/v1/customer/table', customerTableRoutes)
 app.route('/api/v1/customer/menu', customerMenuRoutes)
 app.route('/api/v1/customer/session', customerSessionRoutes)
 app.route('/api/v1/customer/orders', customerOrderRoutes)
