@@ -18,6 +18,8 @@ import { Route as AuthTablesIndexRouteImport } from './routes/_auth/tables/index
 import { Route as AuthStaffIndexRouteImport } from './routes/_auth/staff/index'
 import { Route as AuthOrdersIndexRouteImport } from './routes/_auth/orders/index'
 import { Route as AuthMenuIndexRouteImport } from './routes/_auth/menu/index'
+import { Route as AuthKitchenIndexRouteImport } from './routes/_auth/kitchen/index'
+import { Route as AuthBranchesIndexRouteImport } from './routes/_auth/branches/index'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -63,12 +65,24 @@ const AuthMenuIndexRoute = AuthMenuIndexRouteImport.update({
   path: '/menu/',
   getParentRoute: () => AuthRoute,
 } as any)
+const AuthKitchenIndexRoute = AuthKitchenIndexRouteImport.update({
+  id: '/kitchen/',
+  path: '/kitchen/',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthBranchesIndexRoute = AuthBranchesIndexRouteImport.update({
+  id: '/branches/',
+  path: '/branches/',
+  getParentRoute: () => AuthRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/dashboard': typeof AuthDashboardRoute
+  '/branches/': typeof AuthBranchesIndexRoute
+  '/kitchen/': typeof AuthKitchenIndexRoute
   '/menu/': typeof AuthMenuIndexRoute
   '/orders/': typeof AuthOrdersIndexRoute
   '/staff/': typeof AuthStaffIndexRoute
@@ -79,6 +93,8 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/dashboard': typeof AuthDashboardRoute
+  '/branches': typeof AuthBranchesIndexRoute
+  '/kitchen': typeof AuthKitchenIndexRoute
   '/menu': typeof AuthMenuIndexRoute
   '/orders': typeof AuthOrdersIndexRoute
   '/staff': typeof AuthStaffIndexRoute
@@ -91,6 +107,8 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/_auth/dashboard': typeof AuthDashboardRoute
+  '/_auth/branches/': typeof AuthBranchesIndexRoute
+  '/_auth/kitchen/': typeof AuthKitchenIndexRoute
   '/_auth/menu/': typeof AuthMenuIndexRoute
   '/_auth/orders/': typeof AuthOrdersIndexRoute
   '/_auth/staff/': typeof AuthStaffIndexRoute
@@ -103,6 +121,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/dashboard'
+    | '/branches/'
+    | '/kitchen/'
     | '/menu/'
     | '/orders/'
     | '/staff/'
@@ -113,6 +133,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/dashboard'
+    | '/branches'
+    | '/kitchen'
     | '/menu'
     | '/orders'
     | '/staff'
@@ -124,6 +146,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/_auth/dashboard'
+    | '/_auth/branches/'
+    | '/_auth/kitchen/'
     | '/_auth/menu/'
     | '/_auth/orders/'
     | '/_auth/staff/'
@@ -202,11 +226,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthMenuIndexRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/_auth/kitchen/': {
+      id: '/_auth/kitchen/'
+      path: '/kitchen'
+      fullPath: '/kitchen/'
+      preLoaderRoute: typeof AuthKitchenIndexRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/branches/': {
+      id: '/_auth/branches/'
+      path: '/branches'
+      fullPath: '/branches/'
+      preLoaderRoute: typeof AuthBranchesIndexRouteImport
+      parentRoute: typeof AuthRoute
+    }
   }
 }
 
 interface AuthRouteChildren {
   AuthDashboardRoute: typeof AuthDashboardRoute
+  AuthBranchesIndexRoute: typeof AuthBranchesIndexRoute
+  AuthKitchenIndexRoute: typeof AuthKitchenIndexRoute
   AuthMenuIndexRoute: typeof AuthMenuIndexRoute
   AuthOrdersIndexRoute: typeof AuthOrdersIndexRoute
   AuthStaffIndexRoute: typeof AuthStaffIndexRoute
@@ -215,6 +255,8 @@ interface AuthRouteChildren {
 
 const AuthRouteChildren: AuthRouteChildren = {
   AuthDashboardRoute: AuthDashboardRoute,
+  AuthBranchesIndexRoute: AuthBranchesIndexRoute,
+  AuthKitchenIndexRoute: AuthKitchenIndexRoute,
   AuthMenuIndexRoute: AuthMenuIndexRoute,
   AuthOrdersIndexRoute: AuthOrdersIndexRoute,
   AuthStaffIndexRoute: AuthStaffIndexRoute,

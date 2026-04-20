@@ -14,6 +14,8 @@ import {
   LogOut,
   Menu,
   ChefHat,
+  Flame,
+  Building2,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useAuthStore } from '@/store/auth'
@@ -31,7 +33,9 @@ const NAV = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/menu', label: 'Menu', icon: UtensilsCrossed },
   { to: '/tables', label: 'Tables', icon: Table2 },
+  { to: '/branches', label: 'Branches', icon: Building2 },
   { to: '/orders', label: 'Orders', icon: ClipboardList },
+  { to: '/kitchen', label: 'Kitchen', icon: Flame },
   { to: '/staff', label: 'Staff', icon: Users },
 ] as const
 

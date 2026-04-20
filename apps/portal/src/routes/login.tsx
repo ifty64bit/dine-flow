@@ -5,10 +5,15 @@ import * as v from 'valibot'
 import { client } from '@/lib/client'
 import { useAuthStore } from '@/store/auth'
 
+function getPostLoginPath(user: { staffType: string | null } | null) {
+  return user?.staffType === 'kitchen' ? '/kitchen' : '/dashboard'
+}
+
 export const Route = createFileRoute('/login')({
   beforeLoad: () => {
-    if (useAuthStore.getState().token) {
-      throw redirect({ to: '/dashboard' })
+    const state = useAuthStore.getState()
+    if (state.token) {
+      throw redirect({ to: getPostLoginPath(state.user) })
     }
   },
   component: LoginPage,
@@ -49,7 +54,7 @@ function LoginPage() {
       }
       const { data } = await res.json()
       setAuth(data.token, data.user)
-      await navigate({ to: '/dashboard' })
+      await navigate({ to: getPostLoginPath(data.user) })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
     } finally {

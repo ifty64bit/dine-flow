@@ -16,7 +16,8 @@
     "db:migrate": "tsx src/migrate.ts",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/seed.ts",
-    "db:seed:superadmin": "tsx src/seed-superadmin.ts"
+    "db:seed:superadmin": "tsx src/seed-superadmin.ts",
+    "db:fix:user-branch": "tsx src/fix-user-branch.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",

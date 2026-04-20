@@ -4,7 +4,7 @@ import { eq, asc } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
 import { setCookie, deleteCookie } from 'hono/cookie'
 import { db } from '../db.js'
-import { users, organizationMembers, organizations, subscriptionPlans, subscriptions } from '@dineflow/db'
+import { users, organizationMembers, organizations, subscriptionPlans, subscriptions, branches } from '@dineflow/db'
 import { loginSchema, registerSchema } from '@dineflow/shared'
 import { createSessionToken, invalidateSession, requireAuth } from '../middleware/auth.js'
 import { UnauthorizedError, ConflictError } from '../middleware/errors.js'
@@ -49,6 +49,11 @@ export const authRoutes = new Hono()
         .values({ name: orgName, slug, currency, timezone, trialEndsAt })
         .returning()
 
+      const [branch] = await tx
+        .insert(branches)
+        .values({ organizationId: org.id, name: 'Main Branch' })
+        .returning()
+
       const [user] = await tx
         .insert(users)
         .values({ email: email.toLowerCase(), passwordHash, name })
@@ -58,6 +63,7 @@ export const authRoutes = new Hono()
         organizationId: org.id,
         userId: user.id,
         role: 'owner',
+        branchId: branch.id,
         joinedAt: new Date(),
       })
 
@@ -71,7 +77,7 @@ export const authRoutes = new Hono()
         })
       }
 
-      return { org, user }
+      return { org, user, branch }
     })
 
     const token = await createSessionToken(result.user.id)
@@ -94,7 +100,7 @@ export const authRoutes = new Hono()
           name: result.user.name,
           role: 'owner',
           staffType: null,
-          branchId: null,
+          branchId: result.branch.id,
           organizationId: result.org.id,
         },
         organization: {
