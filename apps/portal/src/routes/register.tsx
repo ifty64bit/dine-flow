@@ -3,11 +3,12 @@ import { useState } from 'react'
 import { BookOpen, Clock } from 'lucide-react'
 import * as v from 'valibot'
 import { client } from '@/lib/client'
-import { useAuthStore } from '@/store/auth'
+import { useAuthStore, getStoredToken } from '@/store/auth'
 
 export const Route = createFileRoute('/register')({
   beforeLoad: () => {
-    if (useAuthStore.getState().token) {
+    const token = useAuthStore.getState().token ?? getStoredToken()
+    if (token) {
       throw redirect({ to: '/dashboard' })
     }
   },

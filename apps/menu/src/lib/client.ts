@@ -36,5 +36,14 @@ export const api = {
         '/api/v1/customer/orders',
         { method: 'POST', body: JSON.stringify(payload) }
       ),
+    list: (sessionId: number) =>
+      apiFetch<import('./types').CustomerOrder[]>(
+        `/api/v1/customer/orders/session/${sessionId}`
+      ),
+  },
+  events: {
+    poll: (channel: string, after: number) =>
+      fetch(`${BASE}/api/v1/events?channel=${encodeURIComponent(channel)}&after=${after}`)
+        .then(r => r.json() as Promise<{ data: { ts: number; event: import('./types').SessionEvent } | null }>),
   },
 }

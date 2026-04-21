@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { BookOpen } from 'lucide-react'
 import * as v from 'valibot'
 import { client } from '@/lib/client'
-import { useAuthStore } from '@/store/auth'
+import { useAuthStore, getStoredToken } from '@/store/auth'
 
 function getPostLoginPath(user: { staffType: string | null } | null) {
   return user?.staffType === 'kitchen' ? '/kitchen' : '/dashboard'
@@ -12,7 +12,8 @@ function getPostLoginPath(user: { staffType: string | null } | null) {
 export const Route = createFileRoute('/login')({
   beforeLoad: () => {
     const state = useAuthStore.getState()
-    if (state.token) {
+    const token = state.token ?? getStoredToken()
+    if (token) {
       throw redirect({ to: getPostLoginPath(state.user) })
     }
   },

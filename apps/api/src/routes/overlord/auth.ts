@@ -30,7 +30,7 @@ export const overlordAuthRoutes = new Hono()
     const valid = await bcrypt.compare(password, admin.passwordHash)
     if (!valid) throw new UnauthorizedError('Invalid credentials')
 
-    const token = createOverlordToken(admin.id)
+    const token = await createOverlordToken(admin.id)
 
     return c.json({
       data: {
@@ -40,7 +40,7 @@ export const overlordAuthRoutes = new Hono()
     })
   })
   .post('/logout', requireOverlordAuth, async (c) => {
-    invalidateOverlordToken(c.get('overlordToken'))
+    await invalidateOverlordToken(c.get('overlordToken'))
     return c.json({ data: { success: true } })
   })
   .get('/me', requireOverlordAuth, async (c) => {

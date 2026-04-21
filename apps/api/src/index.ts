@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { initDb } from './db.js'
+import { initRedis } from './lib/redis.js'
 import { authRoutes } from './routes/auth.js'
 import { customerMenuRoutes } from './routes/customer/menu.js'
 import { customerSessionRoutes } from './routes/customer/sessions.js'
@@ -14,6 +15,7 @@ import { adminReservationRoutes } from './routes/admin/reservations.js'
 import { adminSettingsRoutes } from './routes/admin/settings.js'
 import { adminBranchRoutes } from './routes/admin/branches.js'
 import { adminQrRoutes } from './routes/admin/qr.js'
+import { adminOrderRoutes } from './routes/admin/orders.js'
 import { kitchenOrderRoutes } from './routes/kitchen/orders.js'
 import { waiterRoutes } from './routes/waiter/index.js'
 import { overlordRoutes } from './routes/overlord/index.js'
@@ -25,6 +27,9 @@ type Bindings = {
   DATABASE_URL: string
   BETTER_AUTH_SECRET: string
   NODE_ENV?: string
+  REDIS_URL?: string
+  UPSTASH_REDIS_REST_URL?: string
+  UPSTASH_REDIS_REST_TOKEN?: string
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -32,6 +37,12 @@ const app = new Hono<{ Bindings: Bindings }>()
 app.use('*', async (c, next) => {
   initDb(c.env.DATABASE_URL)
   initAuth(c.env.BETTER_AUTH_SECRET)
+  initRedis({
+    NODE_ENV: c.env.NODE_ENV,
+    REDIS_URL: c.env.REDIS_URL,
+    UPSTASH_REDIS_REST_URL: c.env.UPSTASH_REDIS_REST_URL,
+    UPSTASH_REDIS_REST_TOKEN: c.env.UPSTASH_REDIS_REST_TOKEN,
+  })
   await next()
 })
 
@@ -67,6 +78,7 @@ app.route('/api/v1/admin/reservations', adminReservationRoutes)
 app.route('/api/v1/admin/settings', adminSettingsRoutes)
 app.route('/api/v1/admin/branches', adminBranchRoutes)
 app.route('/api/v1/admin/qr', adminQrRoutes)
+app.route('/api/v1/admin/orders', adminOrderRoutes)
 
 // Kitchen
 app.route('/api/v1/kitchen', kitchenOrderRoutes)

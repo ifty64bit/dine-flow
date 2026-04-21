@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
-import { eq, inArray } from 'drizzle-orm'
+import { eq, and, inArray } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../../db.js'
 import { orders, orderItems, menuItems } from '@dineflow/db'
@@ -24,7 +24,10 @@ export const kitchenOrderRoutes = new Hono()
     const branchId = Number(c.req.param('branchId'))
 
     const activeOrders = await db.query.orders.findMany({
-      where: inArray(orders.status, ['placed', 'confirmed', 'preparing']),
+      where: and(
+        eq(orders.branchId, branchId),
+        inArray(orders.status, ['placed', 'confirmed', 'preparing'])
+      ),
       with: {
         items: {
           with: { menuItem: true },
@@ -37,14 +40,11 @@ export const kitchenOrderRoutes = new Hono()
       orderBy: (o, { asc }) => [asc(o.createdAt)],
     })
 
-    // Sessions have branchId directly (denormalized)
-    const branchOrders = activeOrders.filter((o) => o.session.branchId === branchId)
-
     return c.json({
       data: {
-        placed: branchOrders.filter((o) => o.status === 'placed'),
-        confirmed: branchOrders.filter((o) => o.status === 'confirmed'),
-        preparing: branchOrders.filter((o) => o.status === 'preparing'),
+        placed: activeOrders.filter((o) => o.status === 'placed'),
+        confirmed: activeOrders.filter((o) => o.status === 'confirmed'),
+        preparing: activeOrders.filter((o) => o.status === 'preparing'),
       },
     })
   })
@@ -73,9 +73,9 @@ export const kitchenOrderRoutes = new Hono()
         status,
         updatedAt: new Date().toISOString(),
       }
-      broadcast(`session:${order.sessionId}`, { type: 'item:status_update', payload: wsPayload })
-      broadcast(`kitchen:${branchId}`, { type: 'item:status_update', payload: wsPayload })
-      broadcast(`waiter:${branchId}`, { type: 'item:status_update', payload: wsPayload })
+      await broadcast(`session:${order.sessionId}`, { type: 'item:status_update', payload: wsPayload })
+      await broadcast(`kitchen:${branchId}`, { type: 'item:status_update', payload: wsPayload })
+      await broadcast(`waiter:${branchId}`, { type: 'item:status_update', payload: wsPayload })
 
       // Auto-update order status when all items ready
       const allItems = await db.query.orderItems.findMany({
@@ -87,7 +87,7 @@ export const kitchenOrderRoutes = new Hono()
           .update(orders)
           .set({ status: 'ready', updatedAt: new Date() })
           .where(eq(orders.id, item.orderId))
-        broadcast(`session:${order.sessionId}`, {
+        await broadcast(`session:${order.sessionId}`, {
           type: 'order:status_update',
           payload: {
             orderId: order.id,
@@ -113,7 +113,7 @@ export const kitchenOrderRoutes = new Hono()
       .returning()
     if (!item) throw new NotFoundError('Menu item')
 
-    broadcast('admin', {
+    await broadcast('admin', {
       type: 'item:availability',
       payload: { menuItemId: item.id, name: item.name, isAvailable },
     })
@@ -144,9 +144,9 @@ export const kitchenOrderRoutes = new Hono()
         status,
         updatedAt: new Date().toISOString(),
       }
-      broadcast(`session:${order.sessionId}`, { type: 'order:status_update', payload: wsPayload })
-      broadcast(`kitchen:${branchId}`, { type: 'order:status_update', payload: wsPayload })
-      broadcast(`waiter:${branchId}`, { type: 'order:status_update', payload: wsPayload })
+      await broadcast(`session:${order.sessionId}`, { type: 'order:status_update', payload: wsPayload })
+      await broadcast(`kitchen:${branchId}`, { type: 'order:status_update', payload: wsPayload })
+      await broadcast(`waiter:${branchId}`, { type: 'order:status_update', payload: wsPayload })
     }
 
     return c.json({ data: order })

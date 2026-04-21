@@ -88,7 +88,7 @@ export const adminTableRoutes = new Hono()
       .returning()
     if (!table) throw new NotFoundError('Table')
 
-    broadcast(`waiter:${table.branchId}`, {
+    await broadcast(`waiter:${table.branchId}`, {
       type: 'table:status_change',
       payload: {
         tableId: table.id,

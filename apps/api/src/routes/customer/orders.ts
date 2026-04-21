@@ -101,7 +101,7 @@ customerOrderRoutes.post('/', zValidator('json', createOrderSchema), async (c) =
   const serviceCharge = serviceChargeRate > 0 ? subtotal * (serviceChargeRate / 100) : 0
   const total = subtotal + taxAmount + serviceCharge
 
-  const orderNumber = await getNextOrderNumber(db)
+  const orderNumber = await getNextOrderNumber(db, branchId)
 
   const [order] = await db
     .insert(orders)
@@ -153,9 +153,9 @@ customerOrderRoutes.post('/', zValidator('json', createOrderSchema), async (c) =
     createdAt: order.createdAt.toISOString(),
   }
 
-  broadcast(`session:${sessionId}`, { type: 'order:new', payload: wsPayload })
-  broadcast(`kitchen:${branchId}`, { type: 'order:new', payload: wsPayload })
-  broadcast(`waiter:${branchId}`, { type: 'order:new', payload: wsPayload })
+  await broadcast(`session:${sessionId}`, { type: 'order:new', payload: wsPayload })
+  await broadcast(`kitchen:${branchId}`, { type: 'order:new', payload: wsPayload })
+  await broadcast(`waiter:${branchId}`, { type: 'order:new', payload: wsPayload })
 
   return c.json({ data: { order, items: insertedItems } }, 201)
 })

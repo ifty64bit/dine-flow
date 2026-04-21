@@ -41,7 +41,7 @@ customerSessionRoutes.post('/start', zValidator('json', startSessionSchema), asy
     })
     .returning()
 
-  broadcast(`waiter:${table.branchId}`, {
+  await broadcast(`waiter:${table.branchId}`, {
     type: 'table:status_change',
     payload: {
       tableId: table.id,

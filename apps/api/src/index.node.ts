@@ -8,6 +8,7 @@ import { resolve } from 'path'
 import { serve } from '@hono/node-server'
 import { createDbNode } from '@dineflow/db'
 import { initDb } from './db.js'
+import { initRedis } from './lib/redis.js'
 import { initAuth } from './middleware/auth.js'
 import app from './index.js'
 
@@ -21,6 +22,10 @@ const authSecret = process.env.BETTER_AUTH_SECRET ?? 'dev-secret-change-me'
 
 initDb(dbUrl, createDbNode)
 initAuth(authSecret)
+initRedis({
+  NODE_ENV: process.env.NODE_ENV,
+  REDIS_URL: process.env.REDIS_URL,
+})
 
 const port = parseInt(process.env.PORT ?? '3000', 10)
 serve({ fetch: app.fetch, port, hostname: '0.0.0.0' }, (info) => {

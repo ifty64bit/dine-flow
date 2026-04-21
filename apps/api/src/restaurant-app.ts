@@ -12,6 +12,7 @@ import { adminReservationRoutes } from './routes/admin/reservations.js'
 import { adminSettingsRoutes } from './routes/admin/settings.js'
 import { adminBranchRoutes } from './routes/admin/branches.js'
 import { adminQrRoutes } from './routes/admin/qr.js'
+import { adminOrderRoutes } from './routes/admin/orders.js'
 import { kitchenOrderRoutes } from './routes/kitchen/orders.js'
 import { waiterRoutes } from './routes/waiter/index.js'
 import { customerTableRoutes } from './routes/customer/table.js'
@@ -29,6 +30,7 @@ const restaurantApp = new Hono()
   .route('/api/v1/admin/settings', adminSettingsRoutes)
   .route('/api/v1/admin/branches', adminBranchRoutes)
   .route('/api/v1/admin/qr', adminQrRoutes)
+  .route('/api/v1/admin/orders', adminOrderRoutes)
   .route('/api/v1/kitchen', kitchenOrderRoutes)
   .route('/api/v1/waiter', waiterRoutes)
   .route('/api/v1/customer/table', customerTableRoutes)

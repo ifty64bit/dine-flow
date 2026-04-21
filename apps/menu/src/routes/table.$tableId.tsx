@@ -12,7 +12,7 @@ import {
   AlertCircle,
   ClipboardList,
 } from 'lucide-react'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { client, api } from '@/lib/client'
 import type { MenuItem, Session } from '@/lib/types'
 
@@ -291,6 +291,106 @@ function CartDrawer({
   )
 }
 
+/* ─── Status helpers ─── */
+
+const ITEM_STATUS_LABEL: Record<string, string> = {
+  queued: 'Queued',
+  preparing: 'Preparing',
+  ready: 'Ready',
+  served: 'Served',
+}
+
+const ORDER_STATUS_LABEL: Record<string, string> = {
+  placed: 'Placed',
+  confirmed: 'Confirmed',
+  preparing: 'Preparing',
+  ready: 'Ready to Serve',
+  served: 'Served',
+  cancelled: 'Cancelled',
+}
+
+const ITEM_STATUS_COLOR: Record<string, string> = {
+  queued: 'text-zinc-500',
+  preparing: 'text-orange-400',
+  ready: 'text-emerald-400',
+  served: 'text-zinc-400',
+}
+
+const ORDER_STATUS_COLOR: Record<string, string> = {
+  placed: 'text-yellow-400',
+  confirmed: 'text-sky-400',
+  preparing: 'text-orange-400',
+  ready: 'text-emerald-400',
+  served: 'text-zinc-400',
+  cancelled: 'text-red-400',
+}
+
+// ─── Orders Drawer ────────────────────────────────────────────────────────────
+
+function OrdersDrawer({
+  orders,
+  currency,
+  onClose,
+}: {
+  orders: import('@/lib/types').CustomerOrder[]
+  currency: string
+  onClose: () => void
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70">
+      <div className="w-full sm:max-w-md bg-zinc-900 rounded-t-3xl max-h-[85vh] flex flex-col">
+        <div className="flex items-center justify-between p-5 pb-3 border-b border-zinc-800">
+          <h3 className="text-sm font-bold text-zinc-100">My Orders</h3>
+          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto flex-1 px-5 py-3 space-y-4">
+          {orders.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 text-zinc-600 gap-2">
+              <ClipboardList className="w-6 h-6" />
+              <p className="text-xs">No orders yet</p>
+            </div>
+          )}
+
+          {orders.map(order => (
+            <div key={order.id} className="bg-zinc-800/50 border border-zinc-800 rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-mono text-zinc-500">#{order.orderNumber}</p>
+                <span className={`text-xs font-medium ${ORDER_STATUS_COLOR[order.status] ?? 'text-zinc-400'}`}>
+                  {ORDER_STATUS_LABEL[order.status] ?? order.status}
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                {order.items.map(item => (
+                  <div key={item.id} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-zinc-200">{item.menuItem.name}</span>
+                      <span className="text-xs text-zinc-600">×{item.quantity}</span>
+                    </div>
+                    <span className={`text-xs font-medium ${ITEM_STATUS_COLOR[item.status] ?? 'text-zinc-500'}`}>
+                      {ITEM_STATUS_LABEL[item.status] ?? item.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-zinc-800">
+                <span className="text-xs text-zinc-500">Total</span>
+                <span className="text-sm font-semibold text-zinc-100">
+                  {fmt(currency, parseFloat(order.total))}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 function TablePage() {
@@ -306,6 +406,8 @@ function TablePage() {
   const [cartOpen, setCartOpen] = useState(false)
   const [orderError, setOrderError] = useState<string | null>(null)
   const [lastOrderNumber, setLastOrderNumber] = useState<number | null>(null)
+  const [ordersOpen, setOrdersOpen] = useState(false)
+  const [eventAfter, setEventAfter] = useState(0)
   const categoryRefs = useRef<Record<number, HTMLDivElement | null>>({})
 
   // ── Queries ──────────────────────────────────────────────────────────────
@@ -327,6 +429,42 @@ function TablePage() {
     queryFn: () => api.menu.get(tableQuery.data!.branchId, tableIdNum),
     enabled: view === 'menu' && !!tableQuery.data,
   })
+
+  // ── Orders polling ────────────────────────────────────────────────────────
+
+  const ordersQuery = useQuery({
+    queryKey: ['menu', 'orders', sessionId],
+    queryFn: async () => {
+      if (!sessionId) return []
+      return api.orders.list(sessionId)
+    },
+    enabled: !!sessionId,
+    refetchInterval: 5_000,
+  })
+
+  // ── Event long-polling for instant updates ────────────────────────────────
+
+  useEffect(() => {
+    if (!sessionId || view === 'welcome') return
+    let cancelled = false
+    async function loop() {
+      while (!cancelled) {
+        try {
+          const json = await api.events.poll(`session:${sessionId}`, eventAfter)
+          if (cancelled) break
+          if (json.data) {
+            setEventAfter(json.data.ts)
+            ordersQuery.refetch()
+          }
+        } catch {
+          if (cancelled) break
+        }
+        await new Promise(r => setTimeout(r, 1_000))
+      }
+    }
+    loop()
+    return () => { cancelled = true }
+  }, [sessionId, eventAfter, view])
 
   const categories = menuQuery.data ?? []
   const tableInfo = tableQuery.data
@@ -488,13 +626,22 @@ function TablePage() {
           )}
           <p className="text-zinc-600 text-sm mt-2">Your order is being prepared.</p>
         </div>
-        <button
-          onClick={() => setView('menu')}
-          className="flex items-center gap-2 text-orange-400 hover:text-orange-300 text-sm font-medium transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          Back to menu
-        </button>
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={() => { setOrdersOpen(true); setView('menu') }}
+            className="flex items-center gap-2 bg-orange-500 hover:bg-orange-400 text-white text-sm font-medium rounded-xl px-6 py-2.5 transition-colors"
+          >
+            <ClipboardList className="w-4 h-4" />
+            View my orders
+          </button>
+          <button
+            onClick={() => setView('menu')}
+            className="flex items-center gap-2 text-orange-400 hover:text-orange-300 text-sm font-medium transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back to menu
+          </button>
+        </div>
       </div>
     )
   }
@@ -646,10 +793,19 @@ function TablePage() {
       {cartCount === 0 && sessionId && (
         <div className="fixed bottom-4 right-4 z-20">
           <button
-            className="w-12 h-12 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-zinc-200 shadow-lg transition-colors"
+            onClick={() => setOrdersOpen(true)}
+            className="relative w-12 h-12 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-zinc-200 shadow-lg transition-colors"
             title="My orders"
           >
             <ClipboardList className="w-5 h-5" />
+            {(() => {
+              const activeCount = (ordersQuery.data ?? []).filter(o => o.status !== 'served' && o.status !== 'cancelled').length
+              return activeCount > 0 ? (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center">
+                  {activeCount}
+                </span>
+              ) : null
+            })()}
           </button>
         </div>
       )}
@@ -674,6 +830,15 @@ function TablePage() {
           onChangeQty={changeQty}
           onPlaceOrder={() => placeOrder.mutate()}
           placing={placeOrder.isPending}
+        />
+      )}
+
+      {/* Orders drawer */}
+      {ordersOpen && (
+        <OrdersDrawer
+          orders={ordersQuery.data ?? []}
+          currency={currency}
+          onClose={() => setOrdersOpen(false)}
         />
       )}
     </div>

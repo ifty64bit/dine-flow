@@ -2,7 +2,6 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { ClipboardList, AlertCircle } from 'lucide-react'
 import { client } from '@/lib/client'
-import { useAuthStore } from '@/store/auth'
 
 export const Route = createFileRoute('/_auth/orders/')({
   component: OrdersPage,
@@ -18,15 +17,10 @@ const STATUS_STYLES: Record<string, { bg: string; text: string }> = {
 }
 
 function OrdersPage() {
-  const { user } = useAuthStore()
-  const branchId = user?.branchId ?? 1
-
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['portal', 'kitchen', 'orders', branchId],
+    queryKey: ['portal', 'admin', 'orders'],
     queryFn: async () => {
-      const res = await client.api.v1.kitchen[':branchId'].$get({
-        param: { branchId: String(branchId) },
-      })
+      const res = await client.api.v1.admin.orders.$get()
       if (!res.ok) throw new Error('Failed to load orders')
       return res.json()
     },
@@ -34,7 +28,12 @@ function OrdersPage() {
   })
 
   const allOrders = data
-    ? [...(data.data.placed ?? []), ...(data.data.confirmed ?? []), ...(data.data.preparing ?? [])]
+    ? [
+        ...(data.data.placed ?? []),
+        ...(data.data.confirmed ?? []),
+        ...(data.data.preparing ?? []),
+        ...(data.data.ready ?? []),
+      ]
     : []
 
   return (

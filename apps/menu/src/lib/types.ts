@@ -55,3 +55,48 @@ export interface OrderResult {
   order: { id: number; orderNumber: number }
   items: { id: number }[]
 }
+
+export interface CustomerOrderItem {
+  id: number
+  orderId: number
+  menuItemId: number
+  quantity: number
+  unitPrice: string
+  modifiers: unknown
+  specialInstructions: string | null
+  status: 'queued' | 'preparing' | 'ready' | 'served'
+  station: string | null
+  createdAt: string
+  updatedAt: string
+  menuItem: {
+    id: number
+    name: string
+    description: string | null
+    basePrice: string
+    imageUrl: string | null
+    isAvailable: boolean
+  }
+}
+
+export interface CustomerOrder {
+  id: number
+  sessionId: number
+  branchId: number
+  orderNumber: string
+  status: 'placed' | 'confirmed' | 'preparing' | 'ready' | 'served' | 'cancelled'
+  subtotal: string
+  taxAmount: string
+  serviceCharge: string
+  discountAmount: string
+  total: string
+  notes: string | null
+  createdBy: string
+  createdAt: string
+  updatedAt: string
+  items: CustomerOrderItem[]
+}
+
+export type SessionEvent =
+  | { type: 'order:new'; payload: { orderId: number; orderNumber: string } }
+  | { type: 'order:status_update'; payload: { orderId: number; status: string } }
+  | { type: 'item:status_update'; payload: { orderItemId: number; orderId: number; status: string } }

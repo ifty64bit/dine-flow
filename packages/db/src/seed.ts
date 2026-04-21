@@ -546,10 +546,10 @@ async function seed() {
       .onConflictDoNothing()
   }
 
-  // Order counter
+  // Order counter for branch 1
   await db
     .insert(orderCounters)
-    .values({ id: 1, currentValue: 0 })
+    .values({ branchId: 1, startFrom: 1000, currentValue: 0 })
     .onConflictDoNothing()
 
   console.log('Seed complete!')

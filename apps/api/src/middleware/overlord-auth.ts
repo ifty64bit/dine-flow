@@ -1,5 +1,6 @@
 import { createMiddleware } from 'hono/factory'
 import { db } from '../db.js'
+import { redis } from '../lib/redis.js'
 import { overlordAdmins } from '@dineflow/db'
 import { eq } from 'drizzle-orm'
 import { UnauthorizedError } from './errors.js'
@@ -17,26 +18,45 @@ declare module 'hono' {
   }
 }
 
-const sessions = new Map<string, { adminId: number; expiresAt: number }>()
+const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60 // 7 days
 
-export function createOverlordToken(adminId: number): string {
+function sessionKey(token: string): string {
+  return `overlord:session:${token}`
+}
+
+export async function createOverlordToken(adminId: number): Promise<string> {
   const token = Buffer.from(`overlord:${adminId}:${Date.now()}:${Math.random()}`).toString('base64url')
-  sessions.set(token, { adminId, expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000 })
+  await redis.set(
+    sessionKey(token),
+    JSON.stringify({ adminId, expiresAt: Date.now() + SESSION_TTL_SECONDS * 1000 }),
+    { ex: SESSION_TTL_SECONDS }
+  )
   return token
 }
 
-export function invalidateOverlordToken(token: string): void {
-  sessions.delete(token)
+export async function invalidateOverlordToken(token: string): Promise<void> {
+  await redis.del(sessionKey(token))
 }
 
 export const requireOverlordAuth = createMiddleware(async (c, next) => {
   const token = c.req.header('Authorization')?.replace('Bearer ', '')
   if (!token) throw new UnauthorizedError('No token provided')
 
-  const session = sessions.get(token)
-  if (!session || session.expiresAt < Date.now()) {
-    sessions.delete(token)
+  const data = await redis.get(sessionKey(token))
+  if (!data) {
     throw new UnauthorizedError('Invalid or expired session')
+  }
+
+  let session: { adminId: number; expiresAt: number }
+  try {
+    session = JSON.parse(data)
+  } catch {
+    throw new UnauthorizedError('Invalid session data')
+  }
+
+  if (session.expiresAt < Date.now()) {
+    await redis.del(sessionKey(token))
+    throw new UnauthorizedError('Session expired')
   }
 
   const admin = await db.query.overlordAdmins.findFirst({

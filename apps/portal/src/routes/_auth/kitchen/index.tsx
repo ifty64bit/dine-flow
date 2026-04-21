@@ -50,13 +50,64 @@ const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
 /* ─── Component ─── */
 
+const SELECTED_BRANCH_KEY = 'kitchen-selected-branch'
+
 function KitchenPage() {
   const { user, token } = useAuthStore()
-  const branchId = user?.branchId ?? 1
+  const assignedBranchId = user?.branchId
   const queryClient = useQueryClient()
 
   const [alert, setAlert] = useState<string | null>(null)
   const alertTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Owners/admins can pick a branch; kitchen staff use their assigned one
+  const [selectedBranchId, setSelectedBranchId] = useState<number | null>(() => {
+    if (assignedBranchId) return assignedBranchId
+    const saved = typeof window !== 'undefined' ? window.localStorage.getItem(SELECTED_BRANCH_KEY) : null
+    return saved ? Number(saved) : null
+  })
+
+  const branchId = assignedBranchId ?? selectedBranchId
+
+  const branchesQuery = useQuery({
+    queryKey: ['branches'],
+    queryFn: async () => {
+      const res = await client.api.v1.admin.branches.$get()
+      if (!res.ok) throw new Error('Failed to load branches')
+      return res.json()
+    },
+    enabled: !assignedBranchId,
+  })
+
+  if (!branchId) {
+    const branches = branchesQuery.data?.data ?? []
+    return (
+      <div className="h-full flex flex-col items-center justify-center bg-[#09090b] text-zinc-500 gap-4">
+        <ChefHat className="w-10 h-10" />
+        <p className="text-sm">Select a branch to view the kitchen</p>
+        {branchesQuery.isLoading ? (
+          <div className="w-5 h-5 rounded-full border-2 border-orange-500 border-t-transparent animate-spin" />
+        ) : branches.length === 0 ? (
+          <p className="text-xs">No branches found.</p>
+        ) : (
+          <div className="flex flex-col gap-2 w-64">
+            {branches.map((b) => (
+              <button
+                key={b.id}
+                onClick={() => {
+                  setSelectedBranchId(b.id)
+                  window.localStorage.setItem(SELECTED_BRANCH_KEY, String(b.id))
+                }}
+                className="text-left px-4 py-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 text-sm hover:border-orange-500/50 hover:bg-zinc-800 transition-colors"
+              >
+                {b.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   /* ── Fetch active orders ── */
   const ordersQuery = useQuery({

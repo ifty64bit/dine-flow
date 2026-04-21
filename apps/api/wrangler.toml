@@ -6,6 +6,8 @@ compatibility_flags = ["nodejs_compat"]
 # Secrets (set via CLI — never commit real values):
 #   wrangler secret put DATABASE_URL
 #   wrangler secret put BETTER_AUTH_SECRET
+#   wrangler secret put UPSTASH_REDIS_REST_URL
+#   wrangler secret put UPSTASH_REDIS_REST_TOKEN
 #
 # [vars] is for non-sensitive config only.
 [vars]

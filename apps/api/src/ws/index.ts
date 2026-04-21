@@ -1,3 +1,4 @@
+import { redis } from '../lib/redis.js'
 import type { WsEvent } from '@dineflow/shared'
 
 export interface EventEntry {
@@ -6,30 +7,31 @@ export interface EventEntry {
 }
 
 const MAX_QUEUE = 50
+const EVENT_TTL = 60 // seconds
+const POLL_INTERVAL_MS = 500
 
-// Queued events per channel (ring buffer of last MAX_QUEUE events)
-const eventQueues = new Map<string, EventEntry[]>()
+function channelKey(channel: string): string {
+  return `events:${channel}`
+}
 
-// Pending long-poll resolvers waiting on a channel
-const pendingPolls = new Map<string, Set<(entry: EventEntry) => void>>()
-
-export function broadcast(channel: string, event: WsEvent): void {
+export async function broadcast(channel: string, event: WsEvent): Promise<void> {
   const entry: EventEntry = { ts: Date.now(), event }
 
-  if (!eventQueues.has(channel)) eventQueues.set(channel, [])
-  const queue = eventQueues.get(channel)!
-  queue.push(entry)
-  if (queue.length > MAX_QUEUE) queue.shift()
+  // Store in Redis sorted set (score = timestamp for time-ordered retrieval)
+  await redis.zadd(channelKey(channel), entry.ts, JSON.stringify(entry))
+  await redis.expire(channelKey(channel), EVENT_TTL)
 
-  const pending = pendingPolls.get(channel)
-  if (pending) {
-    for (const resolve of pending) resolve(entry)
-    pending.clear()
+  // Trim to MAX_QUEUE to keep memory bounded
+  const count = await redis.zcard(channelKey(channel))
+  if (count > MAX_QUEUE) {
+    await redis.zremrangebyrank(channelKey(channel), 0, count - MAX_QUEUE - 1)
   }
 }
 
-export function broadcastToMultiple(channels: string[], event: WsEvent): void {
-  for (const ch of channels) broadcast(ch, event)
+export async function broadcastToMultiple(channels: string[], event: WsEvent): Promise<void> {
+  for (const ch of channels) {
+    await broadcast(ch, event)
+  }
 }
 
 /**
@@ -37,34 +39,58 @@ export function broadcastToMultiple(channels: string[], event: WsEvent): void {
  * Resolves immediately if a queued event is newer than `after`.
  * Resolves null when the AbortSignal fires (timeout or client disconnect).
  */
-export function waitForEvent(
+export async function waitForEvent(
   channel: string,
   after: number,
   signal: AbortSignal
 ): Promise<EventEntry | null> {
+  const key = channelKey(channel)
+
+  // Return immediately if we already have a newer event in Redis
+  const entries = await redis.zrangebyscore(key, after + 1, '+inf', {
+    offset: 0,
+    count: 1,
+  })
+
+  if (entries.length > 0) {
+    return JSON.parse(entries[0]) as EventEntry
+  }
+
+  // No recent event → poll Redis until one arrives or signal aborts
   return new Promise((resolve) => {
-    // Return immediately if we already have a newer event buffered
-    const queue = eventQueues.get(channel)
-    if (queue) {
-      const buffered = queue.find((e) => e.ts > after)
-      if (buffered) { resolve(buffered); return }
-    }
+    let resolved = false
+    let timeoutId: ReturnType<typeof setTimeout>
 
-    if (!pendingPolls.has(channel)) pendingPolls.set(channel, new Set())
-    const pending = pendingPolls.get(channel)!
-
-    const onEvent = (entry: EventEntry) => {
-      signal.removeEventListener('abort', onAbort)
-      pending.delete(onEvent)
-      resolve(entry)
+    const cleanup = () => {
+      resolved = true
+      clearTimeout(timeoutId)
     }
 
     const onAbort = () => {
-      pending.delete(onEvent)
+      cleanup()
       resolve(null)
     }
 
-    pending.add(onEvent)
     signal.addEventListener('abort', onAbort, { once: true })
+
+    const poll = async () => {
+      if (resolved || signal.aborted) return
+
+      const entries = await redis.zrangebyscore(key, after + 1, '+inf', {
+        offset: 0,
+        count: 1,
+      })
+
+      if (entries.length > 0) {
+        cleanup()
+        signal.removeEventListener('abort', onAbort)
+        resolve(JSON.parse(entries[0]) as EventEntry)
+        return
+      }
+
+      timeoutId = setTimeout(poll, POLL_INTERVAL_MS)
+    }
+
+    poll()
   })
 }

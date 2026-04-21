@@ -18,11 +18,12 @@ import {
   Building2,
 } from 'lucide-react'
 import { useState } from 'react'
-import { useAuthStore } from '@/store/auth'
+import { useAuthStore, getStoredToken } from '@/store/auth'
 
 export const Route = createFileRoute('/_auth')({
   beforeLoad: () => {
-    if (!useAuthStore.getState().token) {
+    const token = useAuthStore.getState().token ?? getStoredToken()
+    if (!token) {
       throw redirect({ to: '/login' })
     }
   },
