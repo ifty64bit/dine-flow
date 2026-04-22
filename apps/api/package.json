@@ -4,13 +4,16 @@
   "private": true,
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts"
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
     },
     "./overlord-app": {
-      "types": "./dist/overlord-app.d.ts"
+      "types": "./src/overlord-app.ts",
+      "default": "./dist/overlord-app.js"
     },
     "./restaurant-app": {
-      "types": "./dist/restaurant-app.d.ts"
+      "types": "./src/restaurant-app.ts",
+      "default": "./dist/restaurant-app.js"
     }
   },
   "scripts": {
