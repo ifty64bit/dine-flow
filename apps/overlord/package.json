@@ -10,8 +10,8 @@
     "preview": "vite preview",
     "lint": "biome check",
     "format": "biome format --write",
-    "deploy": "bun run build",
-    "deploy:dry": "bun run build"
+    "deploy": "bun run build && wrangler pages deploy dist --project-name dineflow-overlord",
+    "deploy:dry": "bun run build && wrangler pages deploy dist --project-name dineflow-overlord --dry-run"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.16",
