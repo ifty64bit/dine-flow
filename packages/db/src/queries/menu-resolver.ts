@@ -2,12 +2,9 @@ import { eq, and, inArray, or, isNull } from 'drizzle-orm'
 import type { Db } from '../client.js'
 import {
   tables,
-  tableClasses,
   menuCategories,
   menuItems,
   menuItemClassRules,
-  modifierGroups,
-  menuItemModifierGroups,
   modifiers,
 } from '../schema/index.js'
 

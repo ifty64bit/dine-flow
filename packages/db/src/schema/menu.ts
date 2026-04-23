@@ -1,6 +1,6 @@
 import {
   pgTable, bigserial, bigint, varchar, text, numeric, integer, boolean,
-  jsonb, timestamp, primaryKey, index, unique
+  timestamp, primaryKey, index, unique
 } from 'drizzle-orm/pg-core'
 import { visibilityModeEnum, classRuleTypeEnum, kitchenStationEnum } from './enums.js'
 import { branches } from './branches.js'

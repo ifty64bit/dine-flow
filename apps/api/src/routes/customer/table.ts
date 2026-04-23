@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { eq } from 'drizzle-orm'
 import { db } from '../../db.js'
-import { tables, branches, organizations } from '@dineflow/db'
+import { tables, organizations } from '@dineflow/db'
 import { NotFoundError } from '../../middleware/errors.js'
 
 export const customerTableRoutes = new Hono()

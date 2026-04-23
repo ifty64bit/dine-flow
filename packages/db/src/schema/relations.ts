@@ -12,7 +12,7 @@ import { payments, feedback, waiterCalls, auditLogs } from './payments.js'
 
 // ─── Organizations ───────────────────────────────────────────────────────────
 
-export const organizationsRelations = relations(organizations, ({ many, one }) => ({
+export const organizationsRelations = relations(organizations, ({ many }) => ({
   branches: many(branches),
   tableClasses: many(tableClasses),
   members: many(organizationMembers),
