@@ -15,3 +15,8 @@ NODE_ENV = "production"
 
 # After deploying, add a custom domain via the CF dashboard or:
 #   wrangler custom-domains add api.yourdomain.com
+
+[observability]
+[observability.logs]
+enabled = false
+invocation_logs = true
