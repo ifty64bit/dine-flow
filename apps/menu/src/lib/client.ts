@@ -1,7 +1,7 @@
 import { hc } from 'hono/client'
 import type { RestaurantAppType } from '@dineflow/api/restaurant-app'
 
-const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const BASE = import.meta.env.VITE_API_URL ?? 'https://dineflow-api.ifty64bit.workers.dev/'
 
 export const client = hc<RestaurantAppType>(BASE)
 

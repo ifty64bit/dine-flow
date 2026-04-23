@@ -2,7 +2,7 @@ import { hc } from 'hono/client'
 import type { OverlordAppType } from '@dineflow/api/overlord-app'
 import { useAuthStore } from '@/store/auth'
 
-const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+const BASE = import.meta.env.VITE_API_URL ?? 'https://dineflow-api.ifty64bit.workers.dev/'
 const AUTH_STORAGE_KEY = 'overlord-auth'
 
 function clearAuthOnUnauthorized() {

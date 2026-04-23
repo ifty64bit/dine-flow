@@ -330,7 +330,7 @@ function TablesPage() {
     mutationFn: async (tableId: number) => {
       const baseUrl = `${window.location.protocol}//${window.location.host}`.replace(':5000', ':5001')
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/api/v1/admin/qr/generate/${tableId}?baseUrl=${encodeURIComponent(baseUrl)}`,
+        `${import.meta.env.VITE_API_URL ?? 'https://dineflow-api.ifty64bit.workers.dev/'}/api/v1/admin/qr/generate/${tableId}?baseUrl=${encodeURIComponent(baseUrl)}`,
         { method: 'POST', headers: { Authorization: `Bearer ${useAuthStore.getState().token ?? ''}` } }
       )
       if (!res.ok) throw new Error('Failed to generate QR')
