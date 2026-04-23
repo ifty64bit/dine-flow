@@ -10,8 +10,8 @@
     "preview": "vite preview",
     "lint": "biome check",
     "format": "biome format --write",
-    "deploy": "bun run build && wrangler pages deploy dist",
-    "deploy:dry": "bun run build && wrangler pages deploy dist --dry-run"
+    "deploy": "bun run build && wrangler deploy",
+    "deploy:dry": "bun run build && wrangler deploy --dry-run"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
@@ -37,6 +37,7 @@
     "typescript": "^5.7.2",
     "vite": "^7.3.1",
     "vite-tsconfig-paths": "^5.1.4",
+    "@cloudflare/workers-types": "^4.20241218.0",
     "wrangler": "^3.101.0"
   }
 }
