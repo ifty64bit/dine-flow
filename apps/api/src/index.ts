@@ -34,6 +34,13 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>()
 
+const allowedCorsOrigins = new Set([
+  'https://dineflow-overlord.ifty64bit.workers.dev',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:5175',
+])
+
 app.use('*', async (c, next) => {
   initDb(c.env.DATABASE_URL)
   initAuth(c.env.BETTER_AUTH_SECRET)
@@ -50,7 +57,10 @@ app.use('*', logger())
 app.use(
   '*',
   cors({
-    origin: (origin) => origin ?? '*',
+    origin: (origin) => {
+      if (!origin) return '*'
+      return allowedCorsOrigins.has(origin) ? origin : ''
+    },
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
@@ -102,13 +112,20 @@ app.onError((err, c) => {
   }
   console.error('Unhandled error:', err)
   return c.json(
-    { error: 'INTERNAL_ERROR', message: 'An unexpected error occurred', statusCode: 500 },
+    {
+      error: 'INTERNAL_ERROR',
+      message: 'An unexpected error occurred',
+      statusCode: 500,
+    },
     500
   )
 })
 
 app.notFound((c) =>
-  c.json({ error: 'NOT_FOUND', message: 'Route not found', statusCode: 404 }, 404)
+  c.json(
+    { error: 'NOT_FOUND', message: 'Route not found', statusCode: 404 },
+    404
+  )
 )
 
 export type AppType = typeof app
