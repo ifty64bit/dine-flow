@@ -51,7 +51,11 @@ class UpstashRedisAdapter implements RedisClient {
     if (options?.px !== undefined) opts.px = options.px
     if (options?.nx) opts.nx = true
     if (options?.xx) opts.xx = true
-    return this.client.set(key, value, Object.keys(opts).length > 0 ? opts : undefined)
+    return this.client.set(
+      key,
+      value,
+      Object.keys(opts).length > 0 ? opts : undefined
+    )
   }
 
   async del(...keys: string[]): Promise<number> {
@@ -110,14 +114,20 @@ class UpstashRedisAdapter implements RedisClient {
       opts.offset = options.offset
       opts.count = options.count
     }
-    return this.client.zrange(key, min as any, max as any, opts) as Promise<string[]>
+    return this.client.zrange(key, min as any, max as any, opts) as Promise<
+      string[]
+    >
   }
 
   async zcard(key: string): Promise<number> {
     return this.client.zcard(key)
   }
 
-  async zremrangebyrank(key: string, start: number, stop: number): Promise<number> {
+  async zremrangebyrank(
+    key: string,
+    start: number,
+    stop: number
+  ): Promise<number> {
     return this.client.zremrangebyrank(key, start, stop)
   }
 }
@@ -129,7 +139,9 @@ class NodeRedisAdapter implements RedisClient {
   constructor(url: string) {
     this.client = createClient({ url })
     this.connected = this.client.connect().then(() => undefined)
-    this.client.on('error', (err) => console.error('[Redis] Client error:', err))
+    this.client.on('error', (err) =>
+      console.error('[Redis] Client error:', err)
+    )
   }
 
   private async ensureConnected(): Promise<void> {
@@ -228,7 +240,11 @@ class NodeRedisAdapter implements RedisClient {
     return this.client.zCard(key)
   }
 
-  async zremrangebyrank(key: string, start: number, stop: number): Promise<number> {
+  async zremrangebyrank(
+    key: string,
+    start: number,
+    stop: number
+  ): Promise<number> {
     await this.ensureConnected()
     return this.client.zRemRangeByRank(key, start, stop)
   }
@@ -242,19 +258,17 @@ export type RedisEnv = {
 }
 
 export function createRedis(env: RedisEnv): RedisClient {
-  const isProd = env.NODE_ENV === 'production'
-
-  if (isProd) {
-    if (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN) {
-      throw new Error(
-        'UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are required in production'
-      )
-    }
-    return new UpstashRedisAdapter(env.UPSTASH_REDIS_REST_URL, env.UPSTASH_REDIS_REST_TOKEN)
+  if (env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN) {
+    return new UpstashRedisAdapter(
+      env.UPSTASH_REDIS_REST_URL,
+      env.UPSTASH_REDIS_REST_TOKEN
+    )
   }
 
   if (!env.REDIS_URL) {
-    throw new Error('REDIS_URL is required in development')
+    throw new Error(
+      'Redis is not configured. Set REDIS_URL for local Redis or UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN for Upstash.'
+    )
   }
   return new NodeRedisAdapter(env.REDIS_URL)
 }
@@ -269,7 +283,8 @@ export function initRedis(env: RedisEnv) {
 
 export const redis: RedisClient = new Proxy({} as RedisClient, {
   get(_, prop) {
-    if (!_redis) throw new Error('Redis not initialized — call initRedis(env) first')
+    if (!_redis)
+      throw new Error('Redis not initialized — call initRedis(env) first')
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (_redis as any)[prop]
   },
