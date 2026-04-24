@@ -23,7 +23,7 @@
       "dependsOn": ["^build"]
     },
     "lint": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build", "build"]
     },
     "db:generate": {
       "cache": false

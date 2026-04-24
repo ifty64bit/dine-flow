@@ -40,9 +40,11 @@ function bufToBase64Url(buf: ArrayBuffer): string {
 }
 
 async function hmacSign(payload: string): Promise<string> {
+  if (!_secret)
+    throw new Error('Auth secret not initialized — call initAuth(secret) first')
   const key = await crypto.subtle.importKey(
     'raw',
-    enc.encode(_secret || 'dev-secret'),
+    enc.encode(_secret),
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign']
@@ -54,7 +56,9 @@ async function hmacSign(payload: string): Promise<string> {
 export async function createSessionToken(userId: number): Promise<string> {
   const exp = Math.floor(Date.now() / 1000) + SESSION_TTL
   const payload = btoa(JSON.stringify({ userId, exp }))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '')
   const sig = await hmacSign(payload)
   return `${payload}.${sig}`
 }

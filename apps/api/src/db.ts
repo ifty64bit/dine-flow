@@ -1,12 +1,11 @@
 import { createDb } from '@dineflow/db'
 import type { Db } from '@dineflow/db'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type DbFactory = (url: string) => any
+type DbFactory = (url: string) => Db
 
 let _db: Db | null = null
 
-/** Call once before handling requests. Pass a custom factory for non-CF runtimes (e.g. createDbNode for local dev). */
+/** Call once before handling requests. Pass a custom factory for testing. */
 export function initDb(url: string, factory: DbFactory = createDb) {
   if (!_db) _db = factory(url)
 }

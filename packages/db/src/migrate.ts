@@ -1,9 +1,8 @@
-import { drizzle } from 'drizzle-orm/postgres-js'
-import { migrate } from 'drizzle-orm/postgres-js/migrator'
-import postgres from 'postgres'
+import { drizzle } from 'drizzle-orm/neon-serverless'
+import { migrate } from 'drizzle-orm/migrator'
+import { Pool } from '@neondatabase/serverless'
 import { config } from 'dotenv'
 import { resolve } from 'path'
-import { fileURLToPath } from 'url'
 
 config({ path: resolve(process.cwd(), '../../.env') })
 config({ path: resolve(process.cwd(), '.env') })
@@ -13,8 +12,8 @@ if (!connectionString) {
   throw new Error('DATABASE_URL environment variable is required')
 }
 
-const client = postgres(connectionString, { max: 1 })
-const db = drizzle(client)
+const pool = new Pool({ connectionString })
+const db = drizzle(pool)
 
 async function runMigrations() {
   console.log('Running migrations...')
@@ -28,5 +27,5 @@ runMigrations()
     process.exit(1)
   })
   .finally(async () => {
-    await client.end()
+    await pool.end()
   })

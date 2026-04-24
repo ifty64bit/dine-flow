@@ -75,7 +75,7 @@
 | Monorepo Orchestration | **Turborepo** | Task graph with caching |
 | API Framework | **Hono v4** | Zod validation, RPC client |
 | Database | **PostgreSQL 16** | Via Drizzle ORM |
-| DB Drivers | **Neon HTTP** (prod) / **postgres-js** (dev) | Dual driver pattern |
+| DB Drivers | **Neon HTTP** (API) / **Neon TCP Pool** (scripts) | Single platform |
 | API Validation | **Zod** | `@hono/zod-validator` |
 | Frontend Framework | **React 19** | Vite-based builds |
 | Client Routing | **TanStack Router** | File-based routing |
@@ -125,7 +125,7 @@ The core backend. Hono v4 app with **two runtime entry points**:
 | Entry | Purpose | Driver |
 |-------|---------|--------|
 | `src/index.ts` | Cloudflare Workers production | Neon HTTP |
-| `src/index.node.ts` | Local Node.js development | `postgres-js` TCP |
+| `src/index.node.ts` | Node.js development | Neon HTTP |
 
 **Route Structure:**
 
@@ -220,7 +220,7 @@ The database layer.
 
 **Responsibilities:**
 - Drizzle ORM schema definitions (`pg-core`)
-- Dual DB client factories: `createDb()` (Neon) / `createDbNode()` (postgres-js)
+- DB client factories: `createDb()` (Neon HTTP) / `createDbPool()` (Neon TCP pool)
 - Migrations via `drizzle-kit`
 - Complex queries: `menu-resolver.ts`, `order-number.ts`
 - Seed scripts for demo data
@@ -402,12 +402,12 @@ or on error:
 
 ### Docker (Alternative)
 - `docker/Dockerfile.api` — Multi-stage Bun build → Node 20 Alpine runner
-- `docker-compose.yml` — Full stack (Postgres 16, Redis 7, API, mDNS)
-- `docker-compose.dev.yml` — Postgres + Redis only
+- `docker-compose.yml` — Full stack (Redis 7, API, mDNS)
+- `docker-compose.dev.yml` — Redis only
 
 ### Environment Variables
 ```
-DATABASE_URL=postgresql://dineflow:dineflow_local@localhost:5432/dineflow
+DATABASE_URL=postgresql://user:password@host.neon.tech/db?sslmode=require
 REDIS_URL=redis://localhost:6379
 BETTER_AUTH_SECRET=change-me-to-a-long-random-string
 PORT=3000

@@ -222,8 +222,8 @@
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| Docker Compose (full) | ✅ Implemented | Postgres + Redis + API + mDNS |
-| Docker Compose (dev) | ✅ Implemented | Postgres + Redis only |
+| Docker Compose (full) | ✅ Implemented | Redis + API + mDNS |
+| Docker Compose (dev) | ✅ Implemented | Redis only |
 | Dockerfile.api | ✅ Implemented | Multi-stage Bun → Node 20 Alpine |
 | Cloudflare Workers (API) | ✅ Configured | `wrangler.toml` present |
 | Cloudflare Pages (frontends) | ✅ Configured | `wrangler.toml` present |

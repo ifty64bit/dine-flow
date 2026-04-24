@@ -24,7 +24,7 @@ export const DIETARY_TAGS = [
 ] as const
 export type DietaryTag = (typeof DIETARY_TAGS)[number]
 
-export const USER_ROLES = ['admin', 'manager', 'staff'] as const
+export const USER_ROLES = ['owner', 'admin', 'manager', 'staff'] as const
 export type UserRoleConst = (typeof USER_ROLES)[number]
 
 export const STAFF_TYPES = ['waiter', 'kitchen', 'cashier'] as const

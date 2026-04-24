@@ -8,7 +8,7 @@ Legend: ✅ Done · 🔧 Partial · ⏳ Pending · ❌ Not started
 **Goal:** Monorepo scaffold, database, multi-tenant registration, role-based auth
 
 - ✅ Monorepo setup (Bun workspaces + Turborepo)
-- ✅ Docker Compose for local Postgres + Redis
+- ✅ Docker Compose for Redis
 - ✅ Drizzle ORM schema — organizations, users, branches, members
 - ✅ Subscription plans + subscriptions schema
 - ✅ `POST /auth/register` — create org + owner + 30-day trial in one transaction

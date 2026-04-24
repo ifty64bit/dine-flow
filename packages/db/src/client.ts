@@ -1,21 +1,18 @@
 import { drizzle as drizzleNeon } from 'drizzle-orm/neon-http'
-import { drizzle as drizzleNode } from 'drizzle-orm/postgres-js'
-import { neon } from '@neondatabase/serverless'
+import { drizzle as drizzleNeonServerless } from 'drizzle-orm/neon-serverless'
+import { neon, Pool } from '@neondatabase/serverless'
 import * as schema from './schema/index.js'
 
-/** For Cloudflare Workers (production) — uses Neon HTTP transport */
+/** For API runtime — uses Neon HTTP transport (works in CF Workers and Node.js) */
 export function createDb(url: string) {
   const sql = neon(url)
   return drizzleNeon(sql, { schema })
 }
 
-/** For Node.js (local dev) — uses standard TCP postgres connection */
-export function createDbNode(url: string) {
-  // Dynamic import so CF Workers bundler never tries to bundle postgres
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const postgres = require('postgres')
-  const client = postgres(url)
-  return drizzleNode(client, { schema })
+/** For Node.js scripts — uses Neon TCP pool (migrations, seeds, etc.) */
+export function createDbPool(url: string) {
+  const pool = new Pool({ connectionString: url })
+  return drizzleNeonServerless(pool, { schema })
 }
 
 export type Db = ReturnType<typeof createDb>

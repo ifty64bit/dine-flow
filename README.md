@@ -63,7 +63,7 @@ One API server serves all frontends. The portal and menu app use **Hono's RPC cl
 ## Prerequisites
 
 - **Bun** ≥ 1.3.10 — [install](https://bun.sh)
-- **Docker** — for local Postgres + Redis
+- **Docker** — for local Redis
 - Git
 
 ---
@@ -81,7 +81,7 @@ bun install
 cp .env.example .env
 # Edit .env if you need to change ports or credentials
 
-# 4. Start Postgres + Redis
+# 4. Start Redis
 bun run infra:up
 
 # 5. Run database migrations
@@ -116,8 +116,8 @@ bun run dev
 All apps read from the root `.env` file.
 
 ```env
-# Postgres — matches the Docker Compose default
-DATABASE_URL=postgresql://dineflow:dineflow_local@localhost:5432/dineflow
+# Neon Serverless Postgres
+DATABASE_URL=postgresql://user:password@host.neon.tech/db?sslmode=require
 
 # Redis — used for WebSocket pub/sub
 REDIS_URL=redis://localhost:6379
@@ -390,7 +390,7 @@ dineflow/
 │
 ├── docker/
 │   ├── docker-compose.yml           # Full production stack
-│   ├── docker-compose.dev.yml       # Dev: DB + Redis only
+│   ├── docker-compose.dev.yml       # Dev: Redis only
 │   └── Dockerfile.api
 ├── .env.example
 ├── turbo.json

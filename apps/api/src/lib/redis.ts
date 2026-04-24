@@ -51,7 +51,7 @@ class UpstashRedisAdapter implements RedisClient {
     if (options?.px !== undefined) opts.px = options.px
     if (options?.nx) opts.nx = true
     if (options?.xx) opts.xx = true
-    return this.client.set(key, value, Object.keys(opts).length > 0 ? (opts as any) : undefined)
+    return this.client.set(key, value, Object.keys(opts).length > 0 ? opts : undefined)
   }
 
   async del(...keys: string[]): Promise<number> {
@@ -270,6 +270,7 @@ export function initRedis(env: RedisEnv) {
 export const redis: RedisClient = new Proxy({} as RedisClient, {
   get(_, prop) {
     if (!_redis) throw new Error('Redis not initialized — call initRedis(env) first')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (_redis as any)[prop]
   },
 })

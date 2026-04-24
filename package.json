@@ -10,9 +10,9 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
-    "infra:up": "docker compose -f docker/docker-compose.yml up -d db redis",
+    "infra:up": "docker compose -f docker/docker-compose.yml up -d redis",
     "infra:down": "docker compose -f docker/docker-compose.yml down",
-    "infra:logs": "docker compose -f docker/docker-compose.yml logs -f db redis",
+    "infra:logs": "docker compose -f docker/docker-compose.yml logs -f redis",
     "db:generate": "turbo run db:generate --filter=@dineflow/db",
     "db:migrate": "turbo run db:migrate --filter=@dineflow/db",
     "db:studio": "turbo run db:studio --filter=@dineflow/db",
@@ -25,9 +25,12 @@
     "deploy:all": "turbo run deploy --filter=@dineflow/api --filter=@dineflow/portal --filter=@dineflow/menu --filter=@dineflow/overlord"
   },
   "devDependencies": {
-    "@types/node": "^22.10.2",
+    "@types/node": "^25.6.0",
     "prettier": "^3.4.2",
     "turbo": "^2.9.6",
-    "typescript": "^5.7.2"
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.2"
   }
 }

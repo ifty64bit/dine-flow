@@ -2,7 +2,7 @@ import { config } from 'dotenv'
 import { resolve } from 'path'
 import bcrypt from 'bcryptjs'
 import { sql } from 'drizzle-orm'
-import { createDbNode } from './client.js'
+import { createDbPool } from './client.js'
 import { overlordAdmins } from './schema/index.js'
 
 config({ path: resolve(process.cwd(), '../../.env') })
@@ -11,7 +11,7 @@ config({ path: resolve(process.cwd(), '.env') })
 const connectionString = process.env.DATABASE_URL
 if (!connectionString) throw new Error('DATABASE_URL is required')
 
-const db = createDbNode(connectionString)
+const db = createDbPool(connectionString)
 
 async function seedSuperadmin() {
   await db.execute(sql`

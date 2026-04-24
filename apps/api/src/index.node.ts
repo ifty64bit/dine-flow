@@ -1,12 +1,12 @@
 /**
- * Local development entry point — runs as a plain Node.js server.
- * Uses postgres-js driver so it works with a local Docker postgres instance.
- * For production (Cloudflare Workers), use index.ts instead.
+ * Node.js entry point — runs as a plain Node.js server.
+ * Uses Neon HTTP driver so it works with Neon serverless Postgres.
+ * For Cloudflare Workers, use index.ts instead.
  */
 import { config } from 'dotenv'
 import { resolve } from 'path'
 import { serve } from '@hono/node-server'
-import { createDbNode } from '@dineflow/db'
+import { createDb } from '@dineflow/db'
 import { initDb } from './db.js'
 import { initRedis } from './lib/redis.js'
 import { initAuth } from './middleware/auth.js'
@@ -20,7 +20,7 @@ if (!dbUrl) throw new Error('DATABASE_URL is required')
 
 const authSecret = process.env.BETTER_AUTH_SECRET ?? 'dev-secret-change-me'
 
-initDb(dbUrl, createDbNode)
+initDb(dbUrl, createDb)
 initAuth(authSecret)
 initRedis({
   NODE_ENV: process.env.NODE_ENV,
@@ -29,5 +29,5 @@ initRedis({
 
 const port = parseInt(process.env.PORT ?? '3000', 10)
 serve({ fetch: app.fetch, port, hostname: '0.0.0.0' }, (info) => {
-  console.log(`DineFlow API (dev) running on http://0.0.0.0:${info.port}`)
+  console.log(`DineFlow API running on http://0.0.0.0:${info.port}`)
 })

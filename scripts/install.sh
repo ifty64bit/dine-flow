@@ -54,10 +54,7 @@ bun install
 
 # Start production containers
 echo -e "${YELLOW}Starting Docker containers...${NC}"
-docker compose -f docker/docker-compose.yml up -d db redis
-
-echo -e "${YELLOW}Waiting for database to be ready...${NC}"
-sleep 10
+docker compose -f docker/docker-compose.yml up -d redis
 
 # Build
 echo -e "${YELLOW}Building packages...${NC}"

@@ -1,9 +1,5 @@
 import { hc } from 'hono/client'
-
-// We import the AppType lazily to avoid circular build deps.
-// The actual type comes from @dineflow/api.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type AppType = any
+import type { AppType } from '@dineflow/api'
 
 export function createApiClient(baseUrl: string) {
   return hc<AppType>(baseUrl)
