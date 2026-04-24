@@ -6,6 +6,17 @@ const BASE =
 	import.meta.env.VITE_API_URL ?? "https://dineflow-api.ifty64bit.workers.dev/";
 const AUTH_STORAGE_KEY = "portal-auth";
 
+function withAuthHeader(init?: RequestInit): RequestInit {
+	const token = useAuthStore.getState().token;
+	if (!token) return init ?? {};
+
+	const headers = new Headers(init?.headers);
+	if (!headers.has("Authorization")) {
+		headers.set("Authorization", `Bearer ${token}`);
+	}
+	return { ...init, headers };
+}
+
 function clearAuthOnUnauthorized() {
 	useAuthStore.getState().logout();
 	if (typeof window !== "undefined") {
@@ -17,12 +28,8 @@ function clearAuthOnUnauthorized() {
 }
 
 export const client = hc<RestaurantAppType>(BASE, {
-	headers(): Record<string, string> {
-		const token = useAuthStore.getState().token;
-		return token ? { Authorization: `Bearer ${token}` } : {};
-	},
 	async fetch(input: RequestInfo | URL, init?: RequestInit) {
-		const res = await fetch(input, init);
+		const res = await fetch(input, withAuthHeader(init));
 		if (res.status === 401) clearAuthOnUnauthorized();
 		return res;
 	},

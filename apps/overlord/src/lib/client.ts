@@ -3,9 +3,20 @@ import { hc } from 'hono/client'
 import { useAuthStore } from '@/store/auth'
 
 const BASE = import.meta.env.DEV
-  ? 'http://localhost:5000'
+  ? 'http://localhost:3000'
   : 'https://dineflow-api.ifty64bit.workers.dev'
 const AUTH_STORAGE_KEY = 'overlord-auth'
+
+function withAuthHeader(init?: RequestInit): RequestInit {
+  const token = useAuthStore.getState().token
+  if (!token) return init ?? {}
+
+  const headers = new Headers(init?.headers)
+  if (!headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
+  return { ...init, headers }
+}
 
 function clearAuthOnUnauthorized() {
   useAuthStore.getState().logout()
@@ -18,12 +29,8 @@ function clearAuthOnUnauthorized() {
 }
 
 export const client = hc<OverlordAppType>(BASE, {
-  headers(): Record<string, string> {
-    const token = useAuthStore.getState().token
-    return token ? { Authorization: `Bearer ${token}` } : {}
-  },
   async fetch(input: RequestInfo | URL, init?: RequestInit) {
-    const res = await fetch(input, init)
+    const res = await fetch(input, withAuthHeader(init))
     if (res.status === 401) clearAuthOnUnauthorized()
     return res
   },
