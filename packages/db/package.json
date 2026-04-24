@@ -21,7 +21,7 @@
     "db:fix:user-branch": "tsx src/fix-user-branch.ts"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.0.2",
+    "@neondatabase/serverless": "^0.10.0",
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.38.3",
