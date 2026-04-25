@@ -7,12 +7,6 @@ const BASE = import.meta.env.DEV
   : 'https://dineflow-api.ifty64bit.workers.dev'
 const AUTH_STORAGE_KEY = 'overlord-auth'
 
-// Keep a module-level token reference for synchronous access
-let currentToken = useAuthStore.getState().token
-useAuthStore.subscribe((state) => {
-  currentToken = state.token
-})
-
 function getTokenFromStorage(): string | null {
   try {
     const raw = localStorage.getItem(AUTH_STORAGE_KEY)
@@ -24,22 +18,17 @@ function getTokenFromStorage(): string | null {
   }
 }
 
-function withAuthHeader(init?: RequestInit): RequestInit {
-  const token = currentToken ?? getTokenFromStorage()
-  if (!token) return init ?? {}
-
-  const headers = new Headers(init?.headers)
-  if (!headers.has('Authorization')) {
-    headers.set('Authorization', `Bearer ${token}`)
-  }
-  return { ...init, headers }
+function getAuthHeaders(): Record<string, string> {
+  const token = useAuthStore.getState().token ?? getTokenFromStorage()
+  console.log('[overlord-client] getAuthHeaders token:', token ? token.slice(0, 10) + '...' : null)
+  return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
 function clearAuthOnUnauthorized() {
-  currentToken = null
   useAuthStore.getState().logout()
   if (typeof window !== 'undefined') {
     window.localStorage.removeItem(AUTH_STORAGE_KEY)
+    console.error('[overlord-client] 401 — clearing auth')
     if (window.location.pathname !== '/login') {
       window.location.replace('/login')
     }
@@ -47,8 +36,10 @@ function clearAuthOnUnauthorized() {
 }
 
 export const client = hc<OverlordAppType>(BASE, {
+  headers: getAuthHeaders,
   async fetch(input: RequestInfo | URL, init?: RequestInit) {
-    const res = await fetch(input, withAuthHeader(init))
+    console.log('[overlord-client] fetch →', input)
+    const res = await fetch(input, init)
     if (res.status === 401) clearAuthOnUnauthorized()
     return res
   },
