@@ -1,13 +1,19 @@
 import type { RestaurantAppType } from "@dineflow/api/restaurant-app";
 import { hc } from "hono/client";
-import { useAuthStore } from "@/store/auth";
+import { useAuthStore, getStoredToken } from "@/store/auth";
 
 const BASE =
 	import.meta.env.VITE_API_URL ?? "https://dineflow-api.ifty64bit.workers.dev/";
 const AUTH_STORAGE_KEY = "portal-auth";
 
+// Keep a module-level token reference for synchronous access
+let currentToken = useAuthStore.getState().token;
+useAuthStore.subscribe((state) => {
+	currentToken = state.token;
+});
+
 function withAuthHeader(init?: RequestInit): RequestInit {
-	const token = useAuthStore.getState().token;
+	const token = currentToken ?? getStoredToken();
 	if (!token) return init ?? {};
 
 	const headers = new Headers(init?.headers);
@@ -18,6 +24,7 @@ function withAuthHeader(init?: RequestInit): RequestInit {
 }
 
 function clearAuthOnUnauthorized() {
+	currentToken = null;
 	useAuthStore.getState().logout();
 	if (typeof window !== "undefined") {
 		window.localStorage.removeItem(AUTH_STORAGE_KEY);

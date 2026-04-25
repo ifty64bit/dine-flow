@@ -7,8 +7,25 @@ const BASE = import.meta.env.DEV
   : 'https://dineflow-api.ifty64bit.workers.dev'
 const AUTH_STORAGE_KEY = 'overlord-auth'
 
+// Keep a module-level token reference for synchronous access
+let currentToken = useAuthStore.getState().token
+useAuthStore.subscribe((state) => {
+  currentToken = state.token
+})
+
+function getTokenFromStorage(): string | null {
+  try {
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    return parsed?.state?.token ?? parsed?.token ?? null
+  } catch {
+    return null
+  }
+}
+
 function withAuthHeader(init?: RequestInit): RequestInit {
-  const token = useAuthStore.getState().token
+  const token = currentToken ?? getTokenFromStorage()
   if (!token) return init ?? {}
 
   const headers = new Headers(init?.headers)
@@ -19,6 +36,7 @@ function withAuthHeader(init?: RequestInit): RequestInit {
 }
 
 function clearAuthOnUnauthorized() {
+  currentToken = null
   useAuthStore.getState().logout()
   if (typeof window !== 'undefined') {
     window.localStorage.removeItem(AUTH_STORAGE_KEY)
